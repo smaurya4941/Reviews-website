@@ -1,0 +1,59 @@
+.DS_Store
+Thumbs.db
+
+application/cache/*
+!application/cache/index.html
+
+application/logs
+!application/logs/index.html
+
+!application/*/.htaccess
+
+composer.lock
+/vendor/
+node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+user_guide
+rating_2.sql
+body.txt
+email.csv
+phonenumber.csv
+user_guide_src/build/*
+user_guide_src/cilexer/build/*
+user_guide_src/cilexer/dist/*
+user_guide_src/cilexer/pycilexer.egg-info/*
+
+# IDE Files
+#-------------------------
+/nbproject/
+.idea/*
+.vscode/*
+
+## Sublime Text cache files
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+*.sublime-workspace
+*.sublime-project
+
+# Tests
+/tests/tests/
+/tests/results/
+
+# Legacy and Misc Files
+readme.rst
+google97d909a119a15d15.html
+
+# Ignore Scratch Scripts
+replace.py
+update_share.py
+*.pyc
+
+# Ignored Folders
+whatsapp/
+/whatsapp
