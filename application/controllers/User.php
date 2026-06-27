@@ -339,9 +339,8 @@ class User extends User_Controller
 			$this->Usermodel->update_webform();
 			redirect("/");
 		} else {
-			$this->load->view('templates/header', $data);
+			$data['platforms'] = $data['webs']; // Ensure platforms view works properly
 			$this->load->view('users/platforms', $data);
-			$this->load->view('templates/footer');
 		}
 	}
 
@@ -452,9 +451,105 @@ class User extends User_Controller
 		$this->setTabUrl($mod = 'dashboard');
 
 		$data['title'] = "dashboard";
+		$data['quota'] = $this->Usermodel->get_userQuota();
 
 		$data['platforms'] = $this->Usermodel->get_user_websites();
 		$this->load->view('users/dashboard', $data);
+	}
+
+	public function platforms()
+	{
+		$this->checklogin();
+		$this->setTabUrl($mod = 'platforms');
+		$data['title'] = "platforms";
+		$data['platforms'] = $this->Usermodel->get_user_websites();
+		$this->load->view('users/platforms', $data);
+	}
+
+	public function plans()
+	{
+		$this->checklogin();
+		$this->setTabUrl($mod = 'plans');
+		$data['title'] = "plans";
+		$data['quota'] = $this->Usermodel->get_userQuota();
+		$data['plans'] = $this->Usermodel->get_plans();
+		
+		if (isset($data['quota']) && $data['quota']->balance !== '0' && $data['quota']->balance !== null) {
+			$key_id = $this->st->rz_live_key_id ? $this->st->rz_live_key_id : $this->st->rz_test_key_id;
+			$key_secret = $this->st->rz_live_key_secret ? $this->st->rz_live_key_secret : $this->st->rz_test_key_secret;
+
+			if ($key_id && $key_secret) {
+				$balance = ($data['quota']->balance) * 100;
+				$form_key = $data['quota']->by_form_key;
+				$user_id = $data['quota']->by_user_id;
+
+				try {
+					$api = new Api($key_id, $key_secret);
+					$order = $api->order->create(array('receipt' => 'OID' . mt_rand(0, 100000000) . '', 'amount' => $balance, 'currency' => 'INR', 'notes' => array('form_key' => $form_key, 'user_id' => $user_id)));
+
+					$data['error'] = false;
+					$data['order'] = $order;
+					$data['key_id'] = $key_id;
+					$data['key_secret'] = $key_secret;
+				} catch (Exception $e) {
+					$log = "Razorpay Error : " . $e->getMessage() . " [ Username: " . $this->session->userdata('mr_uname') .  " ]";
+					$this->log_act($log);
+
+					$data['error'] = true;
+					$data['error_msg'] = "Razorpay Error : " . $e->getMessage();
+				}
+			} else {
+				$log = "Missing Razorpay API Keys [ Username: " . $this->session->userdata('mr_uname') .  " ]";
+				$this->log_act($log);
+
+				$data['error'] = true;
+				$data['error_msg'] = "Missing Razorpay API Keys";
+			}
+		}
+
+		$this->load->view('users/plans', $data);
+	}
+
+	public function request_plan()
+	{
+		$this->checklogin();
+		
+		$plan_id = $this->input->post('plan_id');
+		$amount = $this->input->post('amount');
+		$payment_method = $this->input->post('payment_method');
+		$user_id = $this->session->userdata('mr_id');
+		$form_key = $this->session->userdata('mr_form_key');
+		
+		if(!$plan_id || !$amount || !$payment_method) {
+			echo json_encode(array('status' => false, 'message' => 'Missing required data.'));
+			return;
+		}
+
+		$data = array(
+			'user_id' => $user_id,
+			'form_key' => $form_key,
+			'plan_id' => $plan_id,
+			'amount' => $amount,
+			'payment_method' => $payment_method,
+			'status' => 'pending'
+		);
+		
+		$this->db->insert('plan_requests', $data);
+		
+		if($this->db->affected_rows() > 0) {
+			echo json_encode(array('status' => true, 'message' => 'Requested successfully.'));
+		} else {
+			echo json_encode(array('status' => false, 'message' => 'Database error.'));
+		}
+	}
+
+	public function company()
+	{
+		$this->checklogin();
+		$this->setTabUrl($mod = 'company');
+		$data['title'] = "company";
+		$data['cmpyInfo'] = $this->Usermodel->get_companyInfo();
+		$this->load->view('users/company', $data);
 	}
 
 	public function fillChart()
@@ -563,73 +658,19 @@ class User extends User_Controller
 	public function account()
 	{
 		$this->checklogin();
-
 		$this->setTabUrl($mod = 'account');
-
 		$data['title'] = "account";
-
 		$data['user_info'] = $this->Usermodel->get_info();
-		$data['websites'] = $this->Usermodel->get_user_websites();
-		$data['quota'] = $this->Usermodel->get_userQuota();
-		$data['cmpyInfo'] = $this->Usermodel->get_companyInfo();
-
-		$this->load->view('templates/header', $data);
-		$this->load->view('users/account_view', $data);
-		$this->load->view('templates/footer');
+		$this->load->view('users/account', $data);
 	}
 
 	public function account_edit()
 	{
 		$this->checklogin();
-
 		$this->setTabUrl($mod = 'account');
-
 		$data['title'] = "account";
-
 		$data['user_info'] = $this->Usermodel->get_info();
-		$data['websites'] = $this->Usermodel->get_user_websites();
-		$data['quota'] = $this->Usermodel->get_userQuota();
-		$data['cmpyInfo'] = $this->Usermodel->get_companyInfo();
-
-		if ($data['quota']->balance !== '0' && $data['quota']->balance !== null) {
-
-			//use Testing keys if Live keys are empty from settings
-			$key_id = $this->st->rz_live_key_id ? $this->st->rz_live_key_id : $this->st->rz_test_key_id;
-			$key_secret = $this->st->rz_live_key_secret ? $this->st->rz_live_key_secret : $this->st->rz_test_key_secret;
-
-			if ($key_id && $key_secret) {
-				//balance
-				$balance = ($data['quota']->balance) * 100;
-				$form_key = $data['quota']->by_form_key;
-				$user_id = $data['quota']->by_user_id;
-
-				try {
-					$api = new Api($key_id, $key_secret);
-					$order = $api->order->create(array('receipt' => 'OID' . mt_rand(0, 100000000) . '', 'amount' => $balance, 'currency' => 'INR', 'notes' => array('form_key' => $form_key, 'user_id' => $user_id)));
-
-					$data['error'] = false;
-					$data['order'] = $order;
-					$data['key_id'] = $key_id;
-					$data['key_secret'] = $key_secret;
-				} catch (Exception $e) {
-					$log = "Razorpay Error : " . $e->getMessage() . " [ Username: " . $this->session->userdata('mr_uname') .  " ]";
-					$this->log_act($log);
-
-					$data['error'] = true;
-					$data['error_msg'] = "Razorpay Error : " . $e->getMessage();
-				}
-			} else {
-				$log = "Missing Razorpay API Keys [ Username: " . $this->session->userdata('mr_uname') .  " ]";
-				$this->log_act($log);
-
-				$data['error'] = true;
-				$data['error_msg'] = "Missing Razorpay API Keys";
-			}
-		}
-
-		$this->load->view('templates/header', $data);
-		$this->load->view('users/account_edit', $data);
-		$this->load->view('templates/footer');
+		$this->load->view('users/account', $data);
 	}
 
 	public function generateQrCode()
@@ -1158,11 +1199,10 @@ class User extends User_Controller
 	public function report()
 	{
 		$this->checklogin();
-
 		$this->setTabUrl($mod = 'report');
 
 		$data['title'] = "report";
-
+		$data['load_bs_table'] = true;
 		$data['rr'] = $this->Usermodel->allrrbyuser();
 		$data['ls'] = $this->Usermodel->allsentlinksbyuser();
 		$data['web'] = $this->Usermodel->get_user_websites();
@@ -1181,9 +1221,7 @@ class User extends User_Controller
 			$data['allt_wp'] = $this->Usermodel->allwapp();
 		}
 
-		$this->load->view('templates/header', $data);
 		$this->load->view('users/report', $data);
-		$this->load->view('templates/footer');
 	}
 
 	//message body to be shared
@@ -1387,9 +1425,7 @@ class User extends User_Controller
 		if ($this->form_validation->run() == false) {
 			$data['platforms'] = $this->Usermodel->get_user_websites();
 
-			$this->load->view('templates/header', $data);
-			$this->load->view('users/share');
-			$this->load->view('templates/footer');
+			$this->load->view('users/share', $data);
 		} else {
 			$cq_res = $this->Usermodel->is_userquotaexpired($qType = 'email_quota');
 
@@ -1477,9 +1513,7 @@ class User extends User_Controller
 		if ($this->form_validation->run() == FALSE) {
 			$data['platforms'] = $this->Usermodel->get_user_websites();
 
-			$this->load->view('templates/header', $data);
-			$this->load->view('users/share');
-			$this->load->view('templates/footer');
+			$this->load->view('users/share', $data);
 		} else {
 			$cq_res = $this->Usermodel->is_userquotaexpired($qType = 'sms_quota');
 

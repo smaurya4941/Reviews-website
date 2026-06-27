@@ -40,18 +40,7 @@
 			</table>
 		</div>
 
-		<div class="oudiv mb-4">
-			<h3>Websites</h3>
-			<table class="table table-hover">
-				<tbody>
-					<?php foreach ($websites->result_array() as $web) : ?>
-						<tr>
-							<td><a target="_blank" class="webA" href="<?php echo $web['web_link'] ?>"><?php echo $web['web_name'] ?></a></td>
-						</tr>
-					<?php endforeach; ?>
-				</tbody>
-			</table>
-		</div>
+
 	</div>
 </div>
 

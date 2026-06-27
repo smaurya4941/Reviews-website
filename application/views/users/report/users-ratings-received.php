@@ -20,19 +20,15 @@ if (!function_exists('ratingBadge')) {
 }
 ?>
 
-<div class="row col-md-12 dataBox">
-    <div class="col-lg-3 col-md-3 col-xs-12 total-column">
-        <div class="panel_s">
-            <div class="panel-body">
-                <h3 class="_total"><?php echo $allrr->num_rows() ?></h3>
-                <span>Total Reviews</span>
-            </div>
-        </div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
+        <h3 class="text-3xl font-bold text-primary mb-1"><?php echo $allrr->num_rows() ?></h3>
+        <span class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Reviews</span>
     </div>
 </div>
 
 <div style="overflow-x:auto;">
-<table id="all_rrtable"
+<table id="all_rrtable" class="table"
        data-toggle="table"
        data-search="true"
        data-show-export="true"

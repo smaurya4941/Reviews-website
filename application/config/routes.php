@@ -85,13 +85,20 @@ $route['activate-user-sub'] = 'admin/activatesub';
 $route['update-user-password'] = 'admin/updatepassword';
 
 //SAdmin
+$route['admin-add-user'] = 'admin/adduser_admin';
 $route['sadmin-add-user'] = 'admin/adduser_sadmin';
+
+// User deletion
+$route['delete-user'] = 'admin/delete_user';
+
+$route['admin-report'] = 'admin/report';
 $route['sadmin-view-user'] = 'admin/viewuser_sadmin';
 
 $route['plans'] = 'admin/plans';
 $route['get-plan'] = 'admin/getplan';
 $route['update-plan'] = 'admin/updateplan';
 $route['add-plan'] = 'admin/addplan';
+$route['approve-plan'] = 'admin/approve_plan';
 
 //payments
 $route['payment-response'] = 'admin/paymentResponse';
@@ -172,6 +179,10 @@ $route['fill-chart'] = 'user/fillChart';
 
 
 $route['support'] = 'admin/support';
+$route['platforms'] = 'user/platforms';
+$route['plans'] = 'user/plans';
+$route['request-plan'] = 'user/request_plan';
+$route['company'] = 'user/company';
 $route['logout'] = 'user/logout';
 
 

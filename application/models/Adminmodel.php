@@ -354,6 +354,33 @@ class Adminmodel extends CI_Model
 		return true;
 	}
 
+	public function get_plan_requests()
+	{
+		$this->db->select('pr.*, u.uname as user_name, u.email as user_email, p.name as plan_name, p.sms_quota, p.email_quota, p.whatsapp_quota, p.web_quota');
+		$this->db->from('plan_requests pr');
+		$this->db->join('users u', 'u.id = pr.user_id');
+		$this->db->join('plans p', 'p.id = pr.plan_id');
+		$this->db->where('pr.status', 'pending');
+		$this->db->order_by('pr.created_at', 'DESC');
+		return $this->db->get();
+	}
+
+	public function get_plan_request_by_id($req_id)
+	{
+		$this->db->select('pr.*, p.sms_quota, p.email_quota, p.whatsapp_quota, p.web_quota');
+		$this->db->from('plan_requests pr');
+		$this->db->join('plans p', 'p.id = pr.plan_id');
+		$this->db->where('pr.id', $req_id);
+		return $this->db->get()->row();
+	}
+
+	public function update_plan_request($req_id, $status)
+	{
+		$this->db->where('id', $req_id);
+		$this->db->update('plan_requests', array('status' => $status));
+		return true;
+	}
+
 
 	//
 	//disabled

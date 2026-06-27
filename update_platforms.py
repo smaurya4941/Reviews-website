@@ -1,62 +1,20 @@
-<?php $this->load->view('templates/tw_header'); ?>
+import re
 
+file_path = 'application/views/users/platforms.php'
+with open(file_path, 'r', encoding='utf-8') as f:
+    content = f.read()
 
-    <div class="p-6 md:p-8 max-w-5xl mx-auto w-full">
-        <!-- Alerts -->
-        <div class="ajax_succ_div bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6 hidden">
-            <span class="block sm:inline ajax_res_succ"></span>
-        </div>
-        <div class="ajax_err_div bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 hidden">
-            <span class="block sm:inline ajax_res_err"></span>
-        </div>
+# Fix the buttons inside the loop to have remove button
+old_buttons = r'<button class="viewweb_btn[^>]+>\s*<span[^>]+>edit</span>\s*</button>'
+new_buttons = """
+<button class="remove_web_btn p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" web_id="<?php echo $web['id'] ?>" web_name="<?php echo $web['web_name'] ?>" web_link="<?php echo $web['web_link'] ?>" title="Remove Platform">
+    <span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+"""
+content = re.sub(old_buttons, new_buttons, content)
 
-        <div class="flex justify-between items-end mb-6">
-            <div>
-                <h2 class="text-2xl font-display font-bold text-gray-900">Platforms</h2>
-                <p class="text-sm text-gray-500 mt-1">Manage your connected review platforms.</p>
-            </div>
-            <div>
-                <button type="button" class="addwebmodal_btn hidden items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg shadow hover:bg-blue-700 transition-colors">
-                    <span class="material-symbols-outlined text-[18px]">add</span> Add Platform
-                </button>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
-                <h3 class="font-bold text-gray-700">Your Webspace</h3>
-                <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full">Available Quota: <span class="webspaceleft"></span></span>
-            </div>
-
-            <div class="space-y-4 eachwebwrapper" id="eachwebwrapper">
-                <?php 
-                $display_platforms = isset($platforms) ? $platforms : (isset($webs) ? $webs : null); 
-                if ($display_platforms && $display_platforms->num_rows() === 0) : ?>
-                    <p class="text-center py-8 text-gray-400 font-medium noweb">No platforms created yet.</p>
-                <?php endif; ?>
-
-                <?php if ($display_platforms && $display_platforms->num_rows() > 0) : ?>
-                    <?php foreach ($display_platforms->result_array() as $web) : ?>
-                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100 eachwebinfo">
-                            <div class="flex items-center gap-4 flex-1">
-                                <div class="w-2 h-2 rounded-full <?php echo ($web['active'] == '1') ? 'bg-green-500' : 'bg-red-500'; ?> shadow-sm"></div>
-                                <div class="flex-1">
-                                    <h4 class="font-bold text-gray-800 text-sm mb-1"><?php echo $web['web_name'] ?></h4>
-                                    <a href="<?php echo $web['web_link'] ?>" target="_blank" class="text-xs text-blue-500 hover:underline"><?php echo $web['web_link'] ?></a>
-                                </div>
-                            </div>
-                            <div>
-                                <button class="viewweb_btn p-2 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors" id="<?php echo $web['id'] ?>">
-                                    <span class="material-symbols-outlined text-[20px]">edit</span>
-                                </button>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
-        </div>
-    </div>
-
+# Append Modal and JS before tw_footer
+modal_and_js = """
     <!-- Add Platform Modal -->
     <div id="addPlatformModal" class="hidden fixed inset-0 z-50 bg-black/50 items-center justify-center backdrop-blur-sm">
         <div class="bg-surface-container-lowest p-6 rounded-xl shadow-xl w-full max-w-md mx-4 relative">
@@ -157,12 +115,12 @@ $(document).ready(function() {
             return false;
         }
         
-        var patt = new RegExp('^(https?:\\/\\/)?' + 
-            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + 
-            '((\\d{1,3}\\.){3}\\d{1,3}))' + 
-            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + 
-            '(\\?[;&a-z\\d%_.~+=-]*)?' + 
-            '(\\#[-a-z\\d_]*)?$', 'i');
+        var patt = new RegExp('^(https?:\\\\/\\\\/)?' + 
+            '((([a-z\\\\d]([a-z\\\\d-]*[a-z\\\\d])*)\\\\.?)+[a-z]{2,}|' + 
+            '((\\\\d{1,3}\\\\.){3}\\\\d{1,3}))' + 
+            '(\\\\:\\\\d+)?(\\\\/[-a-z\\\\d%_.~+]*)*' + 
+            '(\\\\?[;&a-z\\\\d%_.~+=-]*)?' + 
+            '(\\\\#[-a-z\\\\d_]*)?$', 'i');
         
         if (patt.test(web_link)) {
             $(".web_link_err").hide();
@@ -265,5 +223,11 @@ $(document).ready(function() {
     });
 });
 </script>
+"""
 
-<?php $this->load->view('templates/tw_footer'); ?>
+content = content.replace("<?php $this->load->view('templates/tw_footer'); ?>", modal_and_js + "\n<?php $this->load->view('templates/tw_footer'); ?>")
+
+with open(file_path, 'w', encoding='utf-8') as f:
+    f.write(content)
+
+print("Updated platforms.php")

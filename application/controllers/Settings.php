@@ -6,16 +6,10 @@ class Settings extends Admin_Controller
 	public function index()
 	{
 		$this->is_sadmin();
-
 		$this->setTabUrl($mod = 'settings');
-
 		$data['title'] = "settings";
-
 		$data['settings'] = $this->Settingsmodel->get_settings();
-
-		$this->load->view('templates/header', $data);
-		$this->load->view('settings/index');
-		$this->load->view('templates/footer');
+		$this->load->view('settings/index', $data);
 	}
 
 	//create a new user by a companyAdmin

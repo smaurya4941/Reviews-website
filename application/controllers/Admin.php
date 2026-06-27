@@ -17,43 +17,24 @@ class Admin extends Admin_Controller
 	public function users()
 	{
 		$this->is_bothadmin();
-
 		$this->setTabUrl($mod = 'users');
-
 		$data['title'] = "users";
-
 		$data['allusers'] = $this->Adminmodel->get_allusers();
-
 		$data['adminusers'] = $this->Adminmodel->get_adminusers();
-
-		$this->load->view('templates/header', $data);
 		$this->load->view('admin/users', $data);
-		$this->load->view('templates/footer');
 	}
 
 	//create new user
 	public function add()
 	{
 		$this->is_bothadmin();
-
 		$this->setTabUrl($mod = 'users');
-
 		$data['title'] = "new User";
-
 		$data['allusers'] = $this->Adminmodel->get_allusers();
-
 		$data['adminusers'] = $this->Adminmodel->get_adminusers();
-
 		$data['plans'] = $this->Usermodel->get_plans();
-
-		$this->load->view('templates/header', $data);
-		if ($this->session->userdata('mr_sadmin') === "1") {
-			$this->load->view('admin/users/adduser_sadmin', $data);
-		}
-		if ($this->session->userdata('mr_admin') === "1") {
-			$this->load->view('admin/users/adduser_cmpy', $data);
-		}
-		$this->load->view('templates/footer');
+		
+		$this->load->view('admin/add_user', $data);
 	}
 
 	//create a new user by a companyAdmin
@@ -74,7 +55,7 @@ class Admin extends Admin_Controller
 
 		if ($this->form_validation->run() === FALSE) {
 			$this->setFlashMsg('error', validation_errors());
-			redirect('add');
+			redirect('users?tab=add');
 		} else {
 			$fullname = htmlentities($this->input->post('fname')) . " " . htmlentities($this->input->post('lname'));
 			$uname = htmlentities($this->input->post('uname'));
@@ -123,7 +104,7 @@ class Admin extends Admin_Controller
 			}
 		}
 
-		redirect('add');
+		redirect('users?tab=add');
 	}
 
 	//create a new user by sAdmin
@@ -153,7 +134,7 @@ class Admin extends Admin_Controller
 
 		if (!$this->form_validation->run()) {
 			$this->setFlashMsg('error', validation_errors());
-			redirect('add');
+			redirect('users?tab=add');
 		} else {
 			$fullname = htmlentities($this->input->post('fname')) . " " . htmlentities($this->input->post('lname'));
 			$uname = htmlentities($this->input->post('uname'));
@@ -206,7 +187,22 @@ class Admin extends Admin_Controller
 			}
 		}
 
-		redirect('add');
+		redirect('users?tab=add');
+	}
+
+	//delete user
+	public function delete_user()
+	{
+		$this->is_bothadmin();
+		$user_id = $this->input->post('user_id');
+		$form_key = $this->input->post('form_key');
+		
+		if ($user_id && $form_key) {
+			$this->Adminmodel->admin_deleteuser($user_id, $form_key);
+			echo json_encode(['status' => true, 'msg' => 'User deleted successfully', 'token' => $this->security->get_csrf_hash()]);
+		} else {
+			echo json_encode(['status' => false, 'msg' => 'Invalid request', 'token' => $this->security->get_csrf_hash()]);
+		}
 	}
 
 	//activate, de-activate user subscription
@@ -620,16 +616,48 @@ class Admin extends Admin_Controller
 	public function plans()
 	{
 		$this->is_sadmin();
-
 		$this->setTabUrl($mod = 'plans');
-
 		$data['title'] = "plans";
-
+		$data['load_bs_table'] = true;
 		$data['plans'] = $this->Usermodel->get_plans();
+		$data['plan_requests'] = $this->Adminmodel->get_plan_requests();
+		$this->load->view('admin/plans', $data);
+	}
 
-		$this->load->view('templates/header', $data);
-		$this->load->view('admin/plans');
-		$this->load->view('templates/footer');
+	public function approve_plan()
+	{
+		$this->is_sadmin();
+		$req_id = $this->input->post('req_id');
+		$status = $this->input->post('status'); // 'approved' or 'rejected'
+
+		$req = $this->Adminmodel->get_plan_request_by_id($req_id);
+		
+		if($req) {
+			$this->Adminmodel->update_plan_request($req_id, $status);
+			
+			if($status == 'approved') {
+				// update user sub
+				$this->Adminmodel->update_user_sub($req->user_id, $req->form_key, $req->amount);
+				// update user quota
+				$qtData = array(
+					'sms_quota' => $req->sms_quota,
+					'email_quota' => $req->email_quota,
+					'whatsapp_quota' => $req->whatsapp_quota,
+					'web_quota' => $req->web_quota,
+					'plan_id' => $req->plan_id,
+					'amount' => $req->amount,
+					'balance' => 0
+				);
+				$this->Adminmodel->updatequota($req->user_id, $req->form_key, $qtData);
+
+				$log = "Plan {$req->plan_id} approved for User {$req->user_id}";
+				$this->log_act($log);
+			}
+
+			echo json_encode(array('status' => true));
+		} else {
+			echo json_encode(array('status' => false, 'message' => 'Request not found.'));
+		}
 	}
 
 	//get plan details
@@ -839,18 +867,13 @@ class Admin extends Admin_Controller
 	public function logs()
 	{
 		$this->is_sadmin();
-
 		$this->setTabUrl($mod = 'logs');
-
 		$data['title'] = "logs";
-
+		$data['load_bs_table'] = true;
 		$data['logs'] = $this->Adminmodel->get_all_logs();
 		$data['feedbacks'] = $this->Adminmodel->get_feedbacks();
 		$data['transactions'] = $this->Adminmodel->get_all_transactions();
-
-		$this->load->view('templates/header', $data);
-		$this->load->view('admin/logs');
-		$this->load->view('templates/footer');
+		$this->load->view('admin/logs', $data);
 	}
 
 	public function clearlogs()

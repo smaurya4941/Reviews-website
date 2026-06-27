@@ -1,40 +1,24 @@
-<div class="row col-md-12 dataBox">
-    <div class="col-lg-3 col-md-3 col-xs-12 total-column">
-        <div class="panel_s">
-            <div class="panel-body">
-                <h3 class="_total"><?php echo $allls->num_rows() ?></h3>
-                <span class="">Links</span>
-            </div>
-        </div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
+        <h3 class="text-3xl font-bold text-primary mb-1"><?php echo $allls->num_rows() ?></h3>
+        <span class="text-sm font-medium text-gray-500 uppercase tracking-wider">Links</span>
     </div>
-    <div class="col-lg-3 col-md-3 col-xs-12 total-column">
-        <div class="panel_s">
-            <div class="panel-body">
-                <h3 class="_total"><?php echo $allt_mail->num_rows() ?></h3>
-                <span>Emails</span>
-            </div>
-        </div>
+    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
+        <h3 class="text-3xl font-bold text-primary mb-1"><?php echo $allt_mail->num_rows() ?></h3>
+        <span class="text-sm font-medium text-gray-500 uppercase tracking-wider">Emails</span>
     </div>
-    <div class="col-lg-3 col-md-3 col-xs-12 total-column">
-        <div class="panel_s">
-            <div class="panel-body">
-                <h3 class="_total"><?php echo $allt_sms->num_rows() ?></h3>
-                <span>SMS</span>
-            </div>
-        </div>
+    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
+        <h3 class="text-3xl font-bold text-primary mb-1"><?php echo $allt_sms->num_rows() ?></h3>
+        <span class="text-sm font-medium text-gray-500 uppercase tracking-wider">SMS</span>
     </div>
-    <div class="col-lg-3 col-md-3 col-xs-12 total-column">
-        <div class="panel_s">
-            <div class="panel-body">
-                <h3 class="_total"><?php echo $allt_wp->num_rows() ?></h3>
-                <span>Whatsapp</span>
-            </div>
-        </div>
+    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
+        <h3 class="text-3xl font-bold text-primary mb-1"><?php echo $allt_wp->num_rows() ?></h3>
+        <span class="text-sm font-medium text-gray-500 uppercase tracking-wider">Whatsapp</span>
     </div>
 </div>
 
 
-<table id="lstable" data-toggle="table" data-search="true" data-show-export="true" data-buttons-prefix="btn-md btn" data-buttons-align="right" data-pagination="true">
+<table id="lstable" class="table" data-toggle="table" data-search="true" data-show-export="true" data-buttons-prefix="btn-md btn" data-buttons-align="right" data-pagination="true">
     <thead class="text-light" style="background:#294a63">
         <tr>
             <th data-field="uname" data-sortable="true">User</th>
@@ -54,10 +38,10 @@
                 <td>
                     <?php if (!empty($als['sent_to_sms']) && $als['sent_to_sms'] !== null) : ?>
                         <!-- <?php echo $als['sent_to_sms']; ?> -->
-                        <a href="mailto:<?php echo $als['sent_to_sms']; ?>"><?php echo $als['sent_to_sms']; ?></a>
+                        <a href="tel:<?php echo $als['sent_to_sms']; ?>"><?php echo $als['sent_to_sms']; ?></a>
                     <?php elseif (!empty($als['sent_to_email']) && $als['sent_to_email'] !== null) : ?>
                         <!-- <?php echo $als['sent_to_email']; ?> -->
-                        <a href="tel:<?php echo $als['sent_to_email']; ?>"><?php echo $als['sent_to_email']; ?></a>
+                        <a href="mailto:<?php echo $als['sent_to_email']; ?>"><?php echo $als['sent_to_email']; ?></a>
                     <?php endif; ?>
                 </td>
                 <td><?php echo $als['subj']; ?></td>
