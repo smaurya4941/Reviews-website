@@ -1,0 +1,86 @@
+.usersDiv,
+.adduserDiv {
+	/* padding: 0 21px 21px 21px; */
+	padding: 14px;
+}
+
+
+.tab_div {
+	display: flex;
+	flex-direction: column;
+	background: #294a63;
+}
+
+.tab_div a.prof_a {
+	background: #fff;
+	color: #294a63;
+	font-weight: 500;
+}
+
+.tab_link {
+	color: #fff;
+	padding: 15px;
+}
+
+.tab_link:hover {
+	text-decoration: none;
+	color: #fff;
+}
+
+.info_div {
+	background: white;
+}
+
+i.fa-eye,
+i.fa-eye-slash {
+	display: none;
+	cursor: pointer;
+}
+
+/* common tab css */
+h4 {
+	margin-bottom: 0 !important;
+}
+
+hr.p_i {
+	margin: auto 0;
+	margin-bottom: 30px;
+	border-bottom: 3px solid #294a63;
+	width: 180px;
+}
+
+hr.account {
+	margin: auto 0;
+	margin-bottom: 30px;
+	border-bottom: 3px solid #294a63;
+	width: 60px;
+}
+
+.acctbtngrp {
+	display: flex;
+}
+
+.editUserI {
+	color: #294a63;
+}
+
+.subI{
+	cursor: pointer;
+	font-size: 20px;
+}
+
+td span {
+	font-weight: 500;
+	color: #dc3545;
+	/* color: #294a63; */
+}
+
+.cmpyLogoDiv {
+	margin: auto;
+	text-align: center;
+}
+
+.cmpyLogoImg {
+	max-width: 56px;
+	max-height: 50px;
+}

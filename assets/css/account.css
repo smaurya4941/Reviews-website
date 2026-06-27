@@ -1,0 +1,288 @@
+label {
+	color: #294a63;
+	font-weight: 500;
+}
+
+.set_wrapper_out {
+	/* padding: 0 21px 21px 21px; */
+	padding: 14px;
+}
+
+.set_wrapper {
+	/* padding: 0 21px 21px 21px; */
+	padding: 14px;
+}
+
+
+/*  */
+.oudiv_wrapper {
+	border: 1px solid #c5d6de;
+}
+
+.oudiv {
+	border: 1px solid #c5d6de;
+	border-radius: 3px;
+}
+
+.oudiv h3 {
+	background: #294a63;
+	margin: 0;
+	font-size: 16px;
+	padding: 8px 14px;
+	color: #fff;
+	border-bottom: 1px solid #d7dfe3;
+}
+
+.table {
+	margin-bottom: 0 !important;
+	background: #fff;
+}
+
+
+
+/* side nav_links */
+.tab_div {
+	display: flex;
+	padding: 0;
+	margin-bottom: 14px;
+	flex-wrap: wrap;
+}
+
+.tab_div a.prof_a {
+	color: #294a63;
+	font-weight: 500;
+}
+
+.tab_link {
+	color: #294a63;
+	padding: 5px 20px;
+}
+
+.tab_link:hover {
+	text-decoration: none;
+	color: #294a63;
+}
+
+/* common tab css */
+h4 {
+	margin-bottom: 0 !important;
+}
+
+hr.p_i {
+	margin: auto 0;
+	margin-bottom: 30px;
+	border-bottom: 3px solid #294a63;
+	width: 180px;
+}
+
+hr.web {
+	margin: auto 0;
+	margin-bottom: 30px;
+	border-bottom: 3px solid #294a63;
+	width: 70px;
+}
+
+hr.rating {
+	margin: auto 0;
+	margin-bottom: 8px;
+	border-bottom: 3px solid #294a63;
+	width: 45px;
+}
+
+hr.preset {
+	margin: auto 0;
+	margin-bottom: 30px;
+	border-bottom: 3px solid #294a63;
+	width: 130px;
+}
+
+hr.account {
+	margin: auto 0;
+	margin-bottom: 30px;
+	border-bottom: 3px solid #294a63;
+	width: 60px;
+}
+
+.web_input {
+	border: none;
+	background: transparent !important;
+	outline: none;
+	border-bottom: 2px solid black;
+	border-radius: 0;
+}
+
+button.btn-dark,
+button.status_web_btn {
+	padding: 0px;
+	width: 70px;
+	border-radius: 0;
+	outline: none;
+}
+
+.mobileerr,
+.n_pwd_err,
+.rtn_pwd_err {
+	display: none;
+}
+
+label i.fas,
+.tab_link i.fas {
+	color: #294a63;
+}
+
+.help_i {
+	color: #294a63;
+	cursor: pointer;
+}
+
+
+/* website */
+.eachwebinfo {
+	padding: 0 !important;
+	overflow: hidden;
+}
+
+.web_stati {
+	color: #294a63;
+}
+
+.webnamelabel {
+	font-weight: 500;
+}
+
+.viewweb_btn {
+	margin: auto;
+	cursor: pointer;
+}
+
+
+.doc {
+	color: #294a63;
+	cursor: pointer;
+	font-weight: bold;
+}
+
+
+.total-column {
+	word-break: break-all;
+	text-align: center;
+}
+
+.panel_s {
+	margin-bottom: 0 !important;
+	border: none;
+	-webkit-box-shadow: 0 1px 15px 1px rgb(90 90 90 / 8%);
+	box-shadow: 0 1px 15px 1px rgb(90 90 90 / 8%);
+}
+
+.panel-body {
+	background: #f9fafc;
+	padding: 10px 5px;
+	border: 1px solid #dce1ef;
+	color: #294a63;
+}
+
+h3._total {
+	font-weight: 500;
+	/* margin: 0; */
+	margin: 0;
+	font-size: 20px;
+	color: #294a63;
+}
+
+.total-column span {
+	/* font-weight: bold; */
+	word-break: break-word;
+}
+
+
+
+/* reser pwd */
+.rsendcodebtndiv {
+	visibility: hidden;
+}
+
+.vcodediv,
+.vcodebtndiv,
+.fp_pwddiv,
+.fp_newpwdbtndiv,
+.fp_passerr,
+.vcodeerr {
+	display: none;
+}
+
+.genptext {
+	display: none;
+	border: none;
+	outline: none;
+	text-align: center;
+	/* border-bottom: 2px solid #294a63; */
+	height: 33.5px;
+	margin-left: 10px;
+	background: transparent;
+}
+
+.cmpyLogoDiv {
+	margin: auto;
+	text-align: center;
+}
+
+.cmpyLogoImg {
+	max-width: 56px;
+	max-height: 50px;
+}
+
+/*  */
+.linkcopyalert{
+	font-weight: 500;
+}
+#qrcode{
+	text-align: center;
+}
+#qrcode img{
+	/* max-height: 50px; */
+	/* max-width: 50px; */
+}
+/*  */
+
+
+@media only screen and (max-width: 375px) {
+	div.navbar-brand {
+		display: none;
+	}
+}
+
+@media only screen and (max-width: 460px) {
+	div.btn_wrapper_div {
+		display: flex !important;
+		flex-direction: column !important;
+	}
+
+	div.btn_wrapper_div div:nth-child(1) {
+		height: 25px;
+	}
+}
+
+@media only screen and (max-width: 767px) {
+	.info_div {
+		/* margin-top: 30px; */
+		margin-left: 0;
+	}
+}
+
+@media only screen and (max-width: 767px) {
+
+	.websites_foreach_div,
+	.websites_foreach_div_header {
+		display: grid !important;
+		grid-template-columns: auto auto auto !important;
+		margin: 0;
+		padding: 0;
+	}
+
+	.websites_foreach_div_header div {
+		padding: 0;
+		text-align: left !important
+	}
+}
+

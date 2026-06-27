@@ -1,0 +1,13 @@
+.verifyDiv {
+	/* padding: 0 21px 21px 21px; */
+	padding: 14px;
+}
+
+a.rsendcodebtn {
+	text-decoration: none;
+}
+
+a.rsendcodebtn:hover {
+	transform: scale(1.1);
+	transition: transform .2s;
+}
