@@ -18,9 +18,15 @@
             <p class="text-on-surface-variant font-body-md mt-1">Manage your review platforms and monitor overall customer feedback.</p>
         </div>
         <div>
-            <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-200 text-sm font-medium">
-                <span class="material-symbols-outlined text-sm">warning</span> Inactive Subscription
-            </span>
+            <?php if ($this->session->userdata('mr_sub') == '1'): ?>
+                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-success/10 text-success border border-success/20 text-sm font-medium">
+                    <span class="material-symbols-outlined text-sm">check_circle</span> Active Subscription
+                </span>
+            <?php else: ?>
+                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-200 text-sm font-medium">
+                    <span class="material-symbols-outlined text-sm">warning</span> Inactive Subscription
+                </span>
+            <?php endif; ?>
         </div>
     </div>
 </div>
@@ -41,7 +47,11 @@
         <!-- Trial / Account Status -->
         <div class="bg-white p-md rounded-xl border border-gray-100 shadow-sm">
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Trial / Account Status</p>
-            <span class="inline-block px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium border border-gray-200">No active plan</span>
+            <?php if ($this->session->userdata('mr_sub') == '1'): ?>
+                <span class="inline-block px-2 py-1 bg-green-50 text-green-600 rounded text-xs font-medium border border-green-200">Subscription active</span>
+            <?php else: ?>
+                <span class="inline-block px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium border border-gray-200">No active plan</span>
+            <?php endif; ?>
             <p class="text-[11px] text-gray-500 mt-2">Billing lifecycle status</p>
         </div>
         <!-- Combined Quota Credits -->
@@ -132,49 +142,9 @@
 </div>
 
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
-<!-- Misc -->
-<div class="lg:col-span-1 bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-between">
-<div>
-<div class="flex items-center gap-sm mb-md text-primary">
-<span class="material-symbols-outlined">store</span>
-<h3 class="font-headline-md text-label-md uppercase tracking-wider">Misc Campaigns</h3>
-</div>
-<form method="post" id="genFrameForm">
-<input type="hidden" class="csrf_token" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
-<input type="hidden" name="form_key" id="form_key" value='<?php echo $this->session->userdata('mr_form_key') ?>'>
-<input type="hidden" name="id" id="id" value='<?php echo $this->session->userdata('mr_id') ?>'>
-
-<label class="block font-label-md text-on-surface-variant mb-sm">Select Platform</label>
-<select name="platforms[]" class="w-full bg-surface-subtle border border-outline-variant/30 rounded-lg py-2 px-3 font-body-md focus:ring-2 focus:ring-primary transition-all cursor-pointer" multiple required style="min-height:80px;">
-<?php if ($platforms->num_rows() > 0) : ?>
-<?php foreach ($platforms->result_array() as $p) : ?>
-<?php if ($p['active'] === '1') : ?>
-<option value="<?php echo $p['id'] ?>"><?php echo $p['web_name'] ?></option>
-<?php endif; ?>
-<?php endforeach; ?>
-<?php else : ?>
-<option value="" disabled>No platform created</option>
-<?php endif; ?>
-</select>
-<button type="submit" class="genFrameBtn mt-lg w-full py-2 bg-primary text-on-primary font-label-md rounded-lg shadow-lg hover:shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-sm">
-<span class="material-symbols-outlined">add</span> Create Campaign
-</button>
-</form>
-</div>
-<div id="frameCode" class="mt-4 pt-4 border-t border-outline-variant/30" <?php echo ($this->session->userdata('mr_frame_id')) ? '' : 'style="display:none"' ?>>
-<label class="block font-label-md text-on-surface-variant mb-sm">Embed Code</label>
-<div class="flex items-center gap-sm">
-<input type="text" name="frameshare" class="w-full bg-surface-subtle border border-outline-variant/30 rounded-lg py-2 px-3 font-mono text-xs text-on-surface-variant" id='frameshare' value='<iframe width="100%" height="100" src="<?php echo base_url('pf/') . $this->session->userdata('mr_frame_id') ?>" frameborder="0" allowfullscreen></iframe>' readonly>
-<button class="p-2 bg-surface-container-high hover:bg-primary-container hover:text-on-primary rounded-lg transition-all" onclick="copylink_fun('#frameshare')" title="Copy Embed">
-<span class="material-symbols-outlined text-body-md">content_copy</span>
-</button>
-</div>
-</div>
-</div>
-
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg mb-lg">
 <!-- Your Link -->
-<div class="lg:col-span-2 bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30 relative overflow-hidden">
+<div class="lg:col-span-3 bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30 relative overflow-hidden">
 <div class="flex items-center gap-sm mb-md text-primary">
 <span class="material-symbols-outlined">link</span>
 <h3 class="font-headline-md text-label-md uppercase tracking-wider">Your Link</h3>
@@ -189,6 +159,18 @@
 <button class="genQrcode p-2 bg-surface-container-high hover:bg-primary-container hover:text-on-primary rounded-lg transition-all" title="Generate QR">
 <span class="material-symbols-outlined text-body-md">qr_code_2</span>
 </button>
+</div>
+<div class="flex items-center gap-sm mt-3 pt-2 border-t border-gray-100">
+    <span class="text-sm font-medium text-gray-500 mr-2">Share directly via:</span>
+    <a href="https://api.whatsapp.com/send?text=<?php echo urlencode('Please share your feedback with us: ' . base_url('wtr/') . $this->session->userdata('mr_form_key')); ?>" target="_blank" class="w-10 h-10 flex items-center justify-center bg-green-50 text-green-600 hover:bg-green-100 rounded-lg transition-all" title="Share via WhatsApp">
+        <i class="fab fa-whatsapp text-lg"></i>
+    </a>
+    <a href="mailto:?subject=<?php echo urlencode('We would love your feedback!'); ?>&body=<?php echo urlencode('Please share your feedback with us: ' . base_url('wtr/') . $this->session->userdata('mr_form_key')); ?>" class="w-10 h-10 flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-all" title="Share via Email">
+        <span class="material-symbols-outlined text-[20px]">mail</span>
+    </a>
+    <a href="https://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode(base_url('wtr/') . $this->session->userdata('mr_form_key')); ?>" target="_blank" class="w-10 h-10 flex items-center justify-center bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-all" title="Share on Facebook">
+        <i class="fab fa-facebook-f text-lg"></i>
+    </a>
 </div>
 <p class="font-caption text-caption text-outline mt-sm flex items-center gap-xs">
 <span class="material-symbols-outlined text-xs">info</span> Share this link with customers to collect verified feedback.

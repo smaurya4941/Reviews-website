@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Adminmodel extends CI_Model
+class Adminmodel extends MY_Model
 {
 	public function get_allusers()
 	{
@@ -13,16 +13,15 @@ class Adminmodel extends CI_Model
 
 	public function get_adminusers()
 	{
-		$cmpyid = $this->session->userdata("mr_id");
-		$cmpy = $this->session->userdata("mr_cmpy");
-
-		$this->db->where(array('cmpyid' => $cmpyid, 'iscmpy' => '1', 'cmpy' => $cmpy));
+		$this->scope_tenant('cmpyid');
+		$this->db->where('iscmpy', '1');
 		$userinfo = $this->db->get('users');
 		return $userinfo;
 	}
 
 	public function adminadduser($act_key, $form_key)
 	{
+		$this->db->trans_start();
 		$data = array(
 			'sadmin' => '0',
 			'admin' => '0',
@@ -34,9 +33,9 @@ class Adminmodel extends CI_Model
 			'lname' => htmlentities($this->input->post('lname')),
 			'email' => htmlentities($this->input->post('email')),
 			'mobile' => htmlentities($this->input->post('mobile')),
-			'active' => "0",
+			'active' => "1",
 			'website_form' => "0",
-			'sub' => '0',
+			'sub' => '1',
 			'form_key' => $form_key,
 			'act_key' => password_hash($act_key, PASSWORD_DEFAULT),
 			'password' => password_hash($this->input->post('pwd'), PASSWORD_DEFAULT),
@@ -45,6 +44,11 @@ class Adminmodel extends CI_Model
 		$lastid = $this->db->insert_id();
 
 		$this->admin_insert_quota($lastid, $form_key);
+		$this->db->trans_complete();
+
+		if ($this->db->trans_status() === FALSE) {
+			return FALSE;
+		}
 		return TRUE;
 	}
 
@@ -67,6 +71,7 @@ class Adminmodel extends CI_Model
 
 	public function sadminadduser($act_key, $form_key, $admin, $iscmpy)
 	{
+		$this->db->trans_start();
 		$data = array(
 			'sadmin' => '0',
 			'admin' => $admin,
@@ -92,6 +97,12 @@ class Adminmodel extends CI_Model
 
 		if (($iscmpy === 1) && ($admin === 1)) {
 			$this->insert_company_details($lastid, $form_key);
+		}
+
+		$this->db->trans_complete();
+
+		if ($this->db->trans_status() === FALSE) {
+			return FALSE;
 		}
 
 		return TRUE;
@@ -438,6 +449,7 @@ class Adminmodel extends CI_Model
 
 	public function savePaymentInfo($PaymentInfoData)
 	{
+		$this->db->trans_start();
 		$this->db->insert('transactions', $PaymentInfoData);
 
 		$amount = $PaymentInfoData['amount'];
@@ -447,7 +459,13 @@ class Adminmodel extends CI_Model
 		$this->update_user_quota($user_id, $form_key, $amount);
 		$this->update_user_sub($user_id, $form_key, $amount);
 
-		return true;
+		$this->db->trans_complete();
+
+		if ($this->db->trans_status() === FALSE) {
+			return FALSE;
+		}
+
+		return TRUE;
 	}
 
 	public function update_user_quota($user_id, $form_key, $amount)
@@ -465,7 +483,12 @@ class Adminmodel extends CI_Model
 		$this->db->set("sub", "1");
 		$this->db->update("users");
 
-		$this->session->set_userdata('mr_sub', '1');
+		// Only refresh the session flag when the target IS the logged-in user
+		// (self-service payment). When a Super Admin approves someone else's
+		// plan, we must NOT clobber the admin's own session.
+		if ($this->session->userdata('mr_id') == $user_id) {
+			$this->session->set_userdata('mr_sub', '1');
+		}
 		return true;
 	}
 
@@ -525,5 +548,124 @@ class Adminmodel extends CI_Model
 		);
 		$this->db->insert('contact', $data);
 		return true;
+	}
+
+	/**
+	 * Platform-wide analytics for the Super Admin dashboard.
+	 * Aggregates users, subscriptions, platforms, feedback, revenue and
+	 * chart datasets across every tenant on the system.
+	 */
+	public function sadmin_dashboard()
+	{
+		$out = array(
+			'total_accounts'   => 0, // top-level accounts (companies + independent)
+			'companies'        => 0,
+			'sub_users'        => 0,
+			'independent'      => 0,
+			'active_users'     => 0,
+			'inactive_users'   => 0,
+			'active_subs'      => 0,
+			'total_platforms'  => 0,
+			'active_platforms' => 0,
+			'total_reviews'    => 0,
+			'avg_rating'       => 0,
+			'reviews_month'    => 0,
+			'pending_requests' => 0,
+			'revenue'          => 0,
+			'per_platform'     => array(), // [{label, count}]
+			'monthly'          => array(), // [{month, count}]
+			'distribution'     => array(0, 0, 0, 0, 0), // 1..5 stars
+			'top_accounts'     => array(), // [{label, count}]
+		);
+
+		// ---- Users breakdown ----
+		$out['total_accounts'] = $this->db->where(array('sadmin' => '0', 'cmpyid' => null))->count_all_results('users');
+		$out['companies']      = $this->db->where(array('sadmin' => '0', 'admin' => '1', 'iscmpy' => '1'))->count_all_results('users');
+
+		$this->db->where('sadmin', '0');
+		$this->db->where('cmpyid IS NOT NULL', null, false);
+		$out['sub_users'] = $this->db->count_all_results('users');
+
+		$this->db->where(array('sadmin' => '0', 'admin' => '0', 'iscmpy' => '0'));
+		$this->db->where('cmpyid IS NULL', null, false);
+		$out['independent'] = $this->db->count_all_results('users');
+
+		$out['active_users'] = $this->db->where(array('sadmin' => '0', 'active' => '1'))->count_all_results('users');
+
+		$this->db->where('sadmin', '0');
+		$this->db->where_in('active', array('0', '2'));
+		$out['inactive_users'] = $this->db->count_all_results('users');
+
+		$out['active_subs'] = $this->db->where(array('sadmin' => '0', 'sub' => '1'))->count_all_results('users');
+
+		// ---- Platforms ----
+		$out['total_platforms']  = $this->db->count_all_results('websites');
+		$out['active_platforms'] = $this->db->where('active', '1')->count_all_results('websites');
+
+		// ---- Reviews ----
+		$this->db->select('COUNT(*) AS c, AVG(star) AS a', false);
+		$row = $this->db->get('all_ratings')->row();
+		if ($row) {
+			$out['total_reviews'] = (int) $row->c;
+			$out['avg_rating']    = $row->a ? round((float) $row->a, 1) : 0;
+		}
+
+		$this->db->like('rated_at', date('Y-m'), 'after');
+		$out['reviews_month'] = $this->db->count_all_results('all_ratings');
+
+		// ---- Pending plan requests ----
+		$out['pending_requests'] = $this->db->where('status', 'pending')->count_all_results('plan_requests');
+
+		// ---- Revenue (all successful transactions) ----
+		$this->db->select('COALESCE(SUM(amount), 0) AS total', false);
+		$rev = $this->db->get('transactions')->row();
+		$out['revenue'] = $rev ? (float) $rev->total : 0;
+
+		// ---- Reviews per platform (top 8 by name) ----
+		$this->db->select('web_name, COUNT(*) AS cnt', false);
+		$this->db->group_by('web_name');
+		$this->db->order_by('cnt', 'desc');
+		$this->db->limit(8);
+		foreach ($this->db->get('all_ratings')->result() as $p) {
+			$out['per_platform'][] = array(
+				'label' => ($p->web_name !== null && $p->web_name !== '') ? $p->web_name : 'Unknown',
+				'count' => (int) $p->cnt,
+			);
+		}
+
+		// ---- Rating distribution (1..5 stars) ----
+		$this->db->select('star, COUNT(*) AS cnt', false);
+		$this->db->where('star >', 0);
+		$this->db->group_by('star');
+		foreach ($this->db->get('all_ratings')->result() as $d) {
+			$s = (int) $d->star;
+			if ($s >= 1 && $s <= 5) {
+				$out['distribution'][$s - 1] = (int) $d->cnt;
+			}
+		}
+
+		// ---- Reviews over time (monthly, regardless of year) ----
+		$monthArr = array('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
+		$monthIdx = array('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12');
+		foreach ($monthArr as $k => $m) {
+			$this->db->like('rated_at', '-' . $monthIdx[$k] . '-');
+			$out['monthly'][] = array('month' => $m, 'count' => $this->db->count_all_results('all_ratings'));
+		}
+
+		// ---- Top accounts by review volume ----
+		$this->db->select('u.id, u.uname, u.cmpy, COUNT(ar.id) AS cnt', false);
+		$this->db->from('all_ratings ar');
+		$this->db->join('users u', 'u.form_key = ar.form_key');
+		$this->db->group_by(array('u.id', 'u.uname', 'u.cmpy'));
+		$this->db->order_by('cnt', 'desc');
+		$this->db->limit(8);
+		foreach ($this->db->get()->result() as $t) {
+			$out['top_accounts'][] = array(
+				'label' => !empty($t->cmpy) ? $t->cmpy : $t->uname,
+				'count' => (int) $t->cnt,
+			);
+		}
+
+		return $out;
 	}
 }

@@ -138,7 +138,7 @@ class Admin_Controller extends MY_Controller
                 return true;
             } else {
                 $this->setFlashMsg('error', lang('acc_denied'));
-                redirect($_SERVER['HTTP_REFERER']);
+                redirect('dashboard');
             }
         }
     }
@@ -149,12 +149,8 @@ class Admin_Controller extends MY_Controller
             // $this->setFlashMsg('error', lang('login_first'));
             return false;
         } else {
-            if ($this->session->userdata('mr_sadmin') == 1) {
-                return true;
-            } else if ($this->session->userdata('mr_sadmin') == 0) {
-                // $this->setFlashMsg('error', lang('acc_denied'));
-                return false;
-            }
+            // fail closed: only an explicit Super Admin flag grants access
+            return ($this->session->userdata('mr_sadmin') == 1);
         }
     }
 
@@ -168,9 +164,9 @@ class Admin_Controller extends MY_Controller
         } else {
             if ($this->session->userdata('mr_admin') == 1) {
                 return true;
-            } else if ($this->session->userdata('mr_admin') == 0) {
+            } else {
                 $this->setFlashMsg('error', lang('acc_denied'));
-                redirect($_SERVER['HTTP_REFERER']);
+                redirect('dashboard');
             }
         }
     }
@@ -181,12 +177,8 @@ class Admin_Controller extends MY_Controller
             // $this->setFlashMsg('error', lang('login_first'));
             return false;
         } else {
-            if ($this->session->userdata('mr_admin') == 1) {
-                return true;
-            } else if ($this->session->userdata('mr_admin') == 0) {
-                // $this->setFlashMsg('error', lang('acc_denied'));
-                return false;
-            }
+            // fail closed: only an explicit Company Admin flag grants access
+            return ($this->session->userdata('mr_admin') == 1);
         }
     }
 
@@ -202,7 +194,7 @@ class Admin_Controller extends MY_Controller
                 return true;
             } else {
                 $this->setFlashMsg('error', lang('acc_denied'));
-                redirect($_SERVER['HTTP_REFERER']);
+                redirect('dashboard');
             }
         }
     }

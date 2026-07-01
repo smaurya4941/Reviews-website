@@ -18,8 +18,8 @@ class User extends User_Controller
 				redirect('dashboard');
 			}
 		} else {
-		 
-			$this->load->view('templates/home');
+			$data['plans'] = $this->Usermodel->get_plans();
+			$this->load->view('templates/home', $data);
 			// redirect('https://bizorm.com/home');
 		}
 		
@@ -76,7 +76,6 @@ class User extends User_Controller
 					redirect('user/emailverify/' . $res_login);
 				}
 			}
-			error_log("DEBUG VALIDATE: " . print_r($validate, true));
 			//if valid, create sessions via user details
 			if (is_object($validate)) {
 				$id = $validate->id;
@@ -161,7 +160,7 @@ class User extends User_Controller
 		$this->form_validation->set_rules('email', 'E-mail', 'required|trim|valid_email|html_escape');
 		$this->form_validation->set_rules('mobile', 'Mobile', 'required|trim|exact_length[10]|html_escape');
 		$this->form_validation->set_rules('uname', 'Username', 'required|trim|html_escape|is_unique[users.uname]', array('is_unique' => 'This username is taken'));
-		$this->form_validation->set_rules('pwd', 'Password', 'required|trim|html_escape');
+		$this->form_validation->set_rules('pwd', 'Password', 'required|trim|min_length[8]|html_escape');
 		// Quota validations removed for trial logic
 		if (isset($_POST['cmpychkb'])) {
 			$this->form_validation->set_rules('cmpy', 'Company Name', 'trim|html_escape|required|is_unique[users.cmpy]', array('is_unique' => 'This Company already exist'));
@@ -181,45 +180,43 @@ class User extends User_Controller
 			$form_key =  $uname_form . mt_rand(0, 100000);
 			$link = base_url() . "emailverify/" . $form_key;
 
-			//try sending email before inserting to DB
-			$this->load->library('emailconfig');
-			$mail_res = $this->emailconfig->send_email_code($email, $uname, $act_key, $link);
-			$mail_res = true; // Bypassed for local development
+			// for default users who are not a company
+			$admin = $iscmpy = 0;
 
-			if ($mail_res !== TRUE) {
-				$log = "Error sending mail - User Registration [ Username: " . htmlentities($this->input->post('uname')) . ", Email: " . htmlentities($this->input->post('email')) . ", MailError: " . $mail_res . " ]";
+			if (isset($_POST['cmpychkb'])) {
+				$admin = $iscmpy = 1;
+			}
+
+			//save in DB first so a mail-server hiccup never blocks sign-up
+			$db_res = $this->Usermodel->register($admin, $iscmpy, $act_key, $form_key);
+
+			if ($db_res !== TRUE) {
+				$log = "Error saving to Database - User Registration [ Username: " . htmlentities($this->input->post('uname')) . " ]";
 				$this->log_act($log);
 
-				$this->setFlashMsg('error', 'Error sending mail');
+				$this->setFlashMsg('error', 'Error saving your details. Please try again');
 				redirect('register');
 				exit();
-			} else {
-				// for default users who are not a company
-				$admin = $iscmpy = 0;
-
-				if (isset($_POST['cmpychkb'])) {
-					$admin = $iscmpy = 1;
-				}
-
-				//save in DB
-				$db_res = $this->Usermodel->register($admin, $iscmpy, $act_key, $form_key);
-
-				if ($db_res !== TRUE) {
-					$log = "Error saving to Database - User Registration [ Username: " . htmlentities($this->input->post('uname')) . " ]";
-					$this->log_act($log);
-
-					$this->setFlashMsg('error', 'Error saving your details. Please try again');
-					redirect('register');
-					exit();
-				} else {
-					$log = "New user registration [ Username: " . htmlentities($this->input->post('uname')) . ", Email: " . htmlentities($this->input->post('email')) . " ]";
-					$this->log_act($log);
-
-					$this->setFlashMsg('success', 'Verification code sent to your mail.');
-					redirect('emailverify/' . $form_key);
-					exit();
-				}
 			}
+
+			//account created - now try to send the verification code (non-fatal)
+			$this->load->library('emailconfig');
+			$mail_res = $this->emailconfig->send_email_code($email, $uname, $act_key, $link);
+
+			if ($mail_res !== TRUE) {
+				$log = "User registered but verification mail failed [ Username: " . htmlentities($this->input->post('uname')) . ", Email: " . htmlentities($this->input->post('email')) . ", MailError: " . $mail_res . " ]";
+				$this->log_act($log);
+
+				$this->setFlashMsg('error', 'Account created, but we could not send the verification email. Please use "Resend code" or contact support.');
+			} else {
+				$log = "New user registration [ Username: " . htmlentities($this->input->post('uname')) . ", Email: " . htmlentities($this->input->post('email')) . " ]";
+				$this->log_act($log);
+
+				$this->setFlashMsg('success', 'Verification code sent to your mail.');
+			}
+
+			redirect('emailverify/' . $form_key);
+			exit();
 		}
 	}
 
@@ -452,9 +449,24 @@ class User extends User_Controller
 
 		$data['title'] = "dashboard";
 		$data['quota'] = $this->Usermodel->get_userQuota();
-
 		$data['platforms'] = $this->Usermodel->get_user_websites();
-		$this->load->view('users/dashboard', $data);
+
+		if ($this->session->userdata('mr_sadmin') == '1' || $this->session->userdata('mr_admin') == '1') {
+			$this->load->model('Adminmodel');
+			if ($this->session->userdata('mr_sadmin') == '1') {
+				$data['branches'] = $this->Adminmodel->get_allusers();
+				// Platform-wide analytics for the Super Admin
+				$data['stats'] = $this->Adminmodel->sadmin_dashboard();
+				$this->load->view('admin/sadmin_dashboard', $data);
+			} else {
+				$data['branches'] = $this->Adminmodel->get_adminusers();
+				// Real company-wide analytics for the Company Admin (tenant owner)
+				$data['cmpy'] = $this->Usermodel->cmpy_dashboard();
+				$this->load->view('admin/dashboard', $data);
+			}
+		} else {
+			$this->load->view('users/dashboard', $data);
+		}
 	}
 
 	public function platforms()
@@ -1219,6 +1231,11 @@ class User extends User_Controller
 			$data['allt_mail'] = $this->Usermodel->allemail();
 			$data['allt_sms'] = $this->Usermodel->allsms();
 			$data['allt_wp'] = $this->Usermodel->allwapp();
+
+			// Company-wide analytics summary (Company Admin / tenant owner only)
+			if ($this->session->userdata('mr_admin') === '1') {
+				$data['cmpy'] = $this->Usermodel->cmpy_dashboard();
+			}
 		}
 
 		$this->load->view('users/report', $data);

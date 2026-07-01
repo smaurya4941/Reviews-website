@@ -44,6 +44,11 @@
             <!-- User Reports Section -->
             <?php if ($this->session->userdata('mr_sadmin') === '1' || $this->session->userdata('mr_admin') === '1') : ?>
             <div id="userReports" class="tab-content" style="display:none;">
+                <?php if ($this->session->userdata('mr_admin') === '1') : ?>
+                <div class="p-6 pb-0">
+                    <?php include("report/company-analytics.php"); ?>
+                </div>
+                <?php endif; ?>
                 <div class="flex border-b border-gray-100">
                     <button class="sub-tab-btn user-sub-btn active px-6 py-3 text-sm font-medium text-blue-600 border-b-2 border-blue-600 outline-none" data-target="#user-reviews">Reviews</button>
                     <button class="sub-tab-btn user-sub-btn px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent outline-none" data-target="#user-links">Links Sent</button>

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html class="light" lang="en" style=""><head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
-<title>Login | Bizorm - Reputation Management</title>
+<title>Login | <?php echo htmlspecialchars(($this->st && $this->st->site_name) ? $this->st->site_name : 'Bizorm'); ?> - Reputation Management</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
@@ -120,6 +120,10 @@
       }
     </script>
 </head>
+<?php
+$site_name = ($this->st && $this->st->site_name) ? $this->st->site_name : 'Bizorm';
+$site_logo = ($this->st && $this->st->site_logo) ? base_url('assets/images/') . $this->st->site_logo : base_url('assets/images/logo.png');
+?>
 <body class="min-h-screen flex flex-col md:flex-row overflow-x-hidden">
 <!-- Brand/Illustration Side (Left) -->
 <div class="hidden md:flex md:w-1/2 lg:w-3/5 bg-surface-container relative items-center justify-center p-xl overflow-hidden">
@@ -130,12 +134,12 @@
 </div>
 <div class="relative z-10 max-w-xl text-center space-y-lg">
 <div class="flex justify-center mb-xl">
-<a href="<?php echo base_url(); ?>"><img alt="Bizorm Logo" class="h-24 md:h-32 object-contain filter drop-shadow-lg" src="<?php echo base_url('assets/images/logo.png'); ?>"></a>
+<a href="<?php echo base_url(); ?>"><img alt="<?php echo htmlspecialchars($site_name); ?> Logo" class="h-24 md:h-32 object-contain filter drop-shadow-lg" src="<?php echo $site_logo; ?>"></a>
 </div>
 <div class="space-y-md">
 <h1 class="font-display-lg text-display-lg text-primary">Master Your Brand's Narrative.</h1>
 <p class="font-body-lg text-body-lg text-on-surface-variant max-w-md mx-auto">
-                    Join thousands of businesses using Bizorm to monitor, analyze, and elevate their customer reputation in real-time.
+                    Collect reviews, route happy customers to Google, and turn feedback into growth — all from one dashboard.
                 </p>
 </div>
 <!-- Bento-style feature highlight cards -->
@@ -158,23 +162,23 @@
 <div class="w-full max-w-[420px] space-y-xl">
 <!-- Mobile Logo (Visible only on small screens) -->
 <div class="md:hidden flex flex-col items-center space-y-md mb-xl">
-<img alt="Bizorm Logo" class="h-16 object-contain" src="<?php echo base_url('assets/images/logo.png'); ?>">
+<img alt="<?php echo htmlspecialchars($site_name); ?> Logo" class="h-16 object-contain" src="<?php echo $site_logo; ?>">
 <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Welcome Back</h2>
 </div>
-<!-- Header -->
-<div class="hidden md:block space-y-sm text-left">
-
+<!-- Flash / validation messages (visible on all screen sizes) -->
 <?php if($this->session->flashdata('error')): ?>
-    <div class="bg-error/10 border border-error/50 text-error p-3 rounded-lg mb-4 text-sm">
+    <div class="bg-error/10 border border-error/50 text-error p-3 rounded-lg text-sm">
         <?php echo $this->session->flashdata('error'); ?>
     </div>
 <?php endif; ?>
 <?php if($this->session->flashdata('success')): ?>
-    <div class="bg-success/10 border border-success/50 text-success p-3 rounded-lg mb-4 text-sm">
+    <div class="bg-success/10 border border-success/50 text-success p-3 rounded-lg text-sm">
         <?php echo $this->session->flashdata('success'); ?>
     </div>
 <?php endif; ?>
-
+<?php echo validation_errors('<div class="bg-error/10 border border-error/50 text-error p-3 rounded-lg text-sm">', '</div>'); ?>
+<!-- Header (desktop) -->
+<div class="hidden md:block space-y-sm text-left">
 <h2 class="font-headline-lg text-headline-lg text-on-surface">Welcome Back</h2>
 <p class="font-body-md text-body-md text-on-surface-variant">Please enter your details to sign in.</p>
 </div>
@@ -208,7 +212,7 @@
 <input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox">
 <span class="font-caption text-caption text-on-surface-variant group-hover:text-on-surface transition-colors">Remember me</span>
 </label>
-<a class="font-caption text-caption text-primary font-bold hover:underline" href="#">Forgot password?</a>
+<a class="font-caption text-caption text-primary font-bold hover:underline" href="<?php echo base_url('support'); ?>">Forgot password?</a>
 </div>
 <!-- Login Button -->
 <button class="w-full py-md px-lg bg-primary text-on-primary rounded-lg font-label-md text-label-md shadow-soft hover:opacity-90 active:scale-[0.98] transition-all" type="submit">
@@ -223,11 +227,9 @@
 </div>
 <!-- Footer Info -->
 <footer class="mt-auto pt-xl w-full max-w-[420px] flex flex-col md:flex-row justify-between items-center gap-md opacity-60">
-<p class="font-caption text-caption text-outline">© 2024 Bizorm. All rights reserved.</p>
+<p class="font-caption text-caption text-outline">&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</p>
 <div class="flex gap-md">
-<a class="font-caption text-caption text-outline hover:text-primary transition-colors" href="#">Privacy</a>
-<a class="font-caption text-caption text-outline hover:text-primary transition-colors" href="#">Terms</a>
-<a class="font-caption text-caption text-outline hover:text-primary transition-colors" href="#">Help</a>
+<a class="font-caption text-caption text-outline hover:text-primary transition-colors" href="<?php echo base_url('support'); ?>">Help</a>
 </div>
 </footer>
 </div>
@@ -235,18 +237,14 @@
 <script>
         document.querySelectorAll('input').forEach(input => {
             input.addEventListener('focus', () => {
-                input.parentElement.querySelector('.material-symbols-outlined').classList.add('text-primary');
-                input.parentElement.querySelector('.material-symbols-outlined').classList.remove('text-outline');
+                const icon = input.parentElement.querySelector('.material-symbols-outlined');
+                if (icon) { icon.classList.add('text-primary'); icon.classList.remove('text-outline'); }
             });
             input.addEventListener('blur', () => {
-                input.parentElement.querySelector('.material-symbols-outlined').classList.remove('text-primary');
-                input.parentElement.querySelector('.material-symbols-outlined').classList.add('text-outline');
+                const icon = input.parentElement.querySelector('.material-symbols-outlined');
+                if (icon) { icon.classList.remove('text-primary'); icon.classList.add('text-outline'); }
             });
         });
-
-        // Toggle Password visibility logic (Mock)
-        const passwordInput = document.getElementById('password');
-        // This could be extended with a visibility toggle icon
     </script>
 
 

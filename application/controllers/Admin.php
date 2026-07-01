@@ -74,33 +74,30 @@ class Admin extends Admin_Controller
 			$form_key =  $uname_form . mt_rand(0, 100000);
 			$link = base_url() . "emailverify/" . $form_key;
 
+			$mail_res = true;
 			//try sending email before inserting to DB
 			if (isset($_POST['logincred'])) {
 				$this->load->library('emailconfig');
 				$mail_res = $this->emailconfig->new_companyuser($email, $fulln, $cmpy, $act_key, $link, $uname, $pwd);
-				// $mail_res = false;
 			}
 
-			if ($mail_res !== true) {
-				$log = "Error sending mail - New user by Admin [ Admin: " . $this->session->userdata('mr_uname') . ", Username: " . htmlentities($this->input->post('uname')) . ", Email: " . htmlentities($this->input->post('email')) . ", MailError: " . $mail_res . " ]";
+			$db_res = $this->Adminmodel->adminadduser($act_key, $form_key);
+
+			if ($db_res !== TRUE) {
+				$log = "Error saving to Database - New user by Admin [ Admin: " . $this->session->userdata('mr_uname') . ", Username: " . htmlentities($this->input->post('uname')) . " ]";
 				$this->log_act($log);
-
-				$this->setFlashMsg('error', 'Error sending mail');
+				$this->setFlashMsg('error', 'Error saving to Database');
 			} else {
-				$db_res = $this->Adminmodel->adminadduser($act_key, $form_key);
-
-				if ($db_res !== TRUE) {
-					$log = "Error saving to Database - New user by Admin [ Admin: " . $this->session->userdata('mr_uname') . ", Username: " . htmlentities($this->input->post('uname')) . " ]";
+				if ($mail_res !== true) {
+					$log = "Error sending mail - New user by Admin [ Admin: " . $this->session->userdata('mr_uname') . ", Username: " . htmlentities($this->input->post('uname')) . ", Email: " . htmlentities($this->input->post('email')) . ", MailError: " . $mail_res . " ]";
 					$this->log_act($log);
-
-					$this->setFlashMsg('error', 'Error saving to Database');
+					$this->setFlashMsg('success', 'User created, but email failed to send');
 				} else {
 					$log = "New user by Admin [ Admin: " . $this->session->userdata('mr_uname') . ", Username: " . htmlentities($this->input->post('uname')) . ", Email: " . htmlentities($this->input->post('email')) . " ]";
 					$this->log_act($log);
-
 					$this->setFlashMsg('success', 'User created');
-					redirect('users');
 				}
+				redirect('users');
 			}
 		}
 
@@ -152,37 +149,33 @@ class Admin extends Admin_Controller
 			$form_key =  $uname_form . mt_rand(0, 100000);
 			$link = base_url() . "emailverify/" . $form_key;
 
+			$mail_res = true;
 			if (isset($_POST['logincred'])) {
 				$this->load->library('emailconfig');
 				$mail_res = $this->emailconfig->new_user_by_sadmin($email, $fulln, $act_key, $link, $uname, $pwd);
-				// $mail_res = true;
 			}
 
-			if ($mail_res !== true) {
-				$log = "Error sending mail - New user by Admin [ Admin: " . $this->session->userdata('mr_uname') . ", Username: " . htmlentities($this->input->post('uname')) . ", Email: " . htmlentities($this->input->post('email')) . ", MailError: " . $mail_res . " ]";
+			//default for users not a company
+			$admin = $iscmpy = 0;
+			if (isset($_POST['cmpychkb'])) {
+				$admin = $iscmpy = 1;
+			}
+
+			$db_res = $this->Adminmodel->sadminadduser($act_key, $form_key, $admin, $iscmpy);
+
+			if ($db_res !== TRUE) {
+				$log = "Error saving to Database - New user by Admin [ Admin: " . $this->session->userdata('mr_uname') . ", Username: " . htmlentities($this->input->post('uname')) . " ]";
 				$this->log_act($log);
-
-				$this->setFlashMsg('error', 'Error sending mail');
+				$this->setFlashMsg('error', 'Error saving to Database');
 			} else {
-				//default for users not a company
-				$admin = $iscmpy = 0;
-
-				if (isset($_POST['cmpychkb'])) {
-					$admin = $iscmpy = 1;
-				}
-
-				$db_res = $this->Adminmodel->sadminadduser($act_key, $form_key, $admin, $iscmpy);
-
-				if ($db_res !== TRUE) {
-					$log = "Error saving to Database - New user by Admin [ Admin: " . $this->session->userdata('mr_uname') . ", Username: " . htmlentities($this->input->post('uname')) . " ]";
+				if ($mail_res !== true) {
+					$log = "Error sending mail - New user by Admin [ Admin: " . $this->session->userdata('mr_uname') . ", Username: " . htmlentities($this->input->post('uname')) . ", Email: " . htmlentities($this->input->post('email')) . ", MailError: " . $mail_res . " ]";
 					$this->log_act($log);
-
-					$this->setFlashMsg('error', 'Error saving to Database');
+					$this->setFlashMsg('success', 'User created, but email failed to send');
 				} else {
 					$log = "New user by Admin [ Admin: " . $this->session->userdata('mr_uname') . ", Username: " . htmlentities($this->input->post('uname')) . ", Email: " . htmlentities($this->input->post('email')) . " ]";
 					$this->log_act($log);
-
-					$this->setFlashMsg('success', 'User created.');
+					$this->setFlashMsg('success', 'User created');
 				}
 			}
 		}
@@ -1007,20 +1000,4 @@ class Admin extends Admin_Controller
 		}
 	}
 
-
-
-	public function testCase()
-	{
-		$data['title'] = "test case";
-
-		$this->setTabUrl($mod = 'test');
-
-		// $this->is_sadmin();
-
-		// $data['feedbacks'] = $this->Adminmodel->get_feedbacks();
-
-		$this->load->view('templates/header', $data);
-		$this->load->view('templates/testCase', $data);
-		$this->load->view('templates/footer');
-	}
 }

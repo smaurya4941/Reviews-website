@@ -29,7 +29,9 @@
                         <th class="px-6 py-4">User</th>
                         <th class="px-6 py-4">Role & Company</th>
                         <th class="px-6 py-4">Status</th>
+                        <?php if ($this->session->userdata('mr_sadmin') == '1'): ?>
                         <th class="px-6 py-4">Subscription</th>
+                        <?php endif; ?>
                         <th class="px-6 py-4 text-right">Actions</th>
                     </tr>
                 </thead>
@@ -80,14 +82,23 @@
                                 </span>
                             <?php endif; ?>
                         </td>
+                        <?php if ($this->session->userdata('mr_sadmin') == '1'): ?>
                         <td class="px-6 py-4">
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" class="sr-only peer toggle-sub" data-id="<?php echo $user->id; ?>" data-formkey="<?php echo $user->form_key; ?>" <?php echo $user->sub == '1' ? 'checked' : ''; ?>>
                                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
                             </label>
                         </td>
+                        <?php endif; ?>
                         <td class="px-6 py-4 text-right">
                             <div class="flex justify-end gap-2">
+                                <input type="hidden" id="link_<?php echo $user->id; ?>" value="<?php echo base_url('wtr/') . $user->form_key; ?>">
+                                <button class="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors copy-link-btn" data-id="<?php echo $user->id; ?>" title="Copy Link">
+                                    <span class="material-symbols-outlined text-[20px]">content_copy</span>
+                                </button>
+                                <button class="p-2 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors gen-qr-btn" data-id="<?php echo $user->id; ?>" data-formkey="<?php echo $user->form_key; ?>" title="QR Code">
+                                    <span class="material-symbols-outlined text-[20px]">qr_code_2</span>
+                                </button>
                                 <button class="p-2 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors edit-user-btn" data-id="<?php echo $user->id; ?>" data-formkey="<?php echo $user->form_key; ?>" title="Edit User">
                                     <span class="material-symbols-outlined text-[20px]">edit</span>
                                 </button>
@@ -240,6 +251,18 @@
     </div>
 </div>
 
+<!-- QR Modal -->
+<div id="qrModal" class="hidden fixed inset-0 z-[100] bg-black/50 items-center justify-center backdrop-blur-sm">
+    <div class="bg-surface-container-lowest p-lg rounded-xl shadow-xl w-full max-w-sm mx-4 transform transition-all relative" style="background-color: white; padding: 1.5rem; border-radius: 0.75rem;">
+        <button class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors" onclick="closeQrModal()">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <h3 class="text-xl font-display font-bold text-gray-900 mb-4 text-center">QR Code</h3>
+        <div id="qrcode" class="flex justify-center mb-6"></div>
+        <div class="downloadqrcode text-center"></div>
+    </div>
+</div>
+
 <?php $this->load->view('templates/tw_footer'); ?>
 <script>
 function openAddUserModal() {
@@ -288,6 +311,71 @@ $(document).ready(function() {
                     $('#ajax_res_err').text(data.msg);
                     $('#ajax_err_div').fadeIn().delay(3000).fadeOut();
                 }
+            }
+        });
+    });
+
+    // QR Modal logic
+    function closeQrModal() {
+        $('#qrModal').addClass('hidden').removeClass('flex');
+        $('#qrcode').empty();
+        $('.downloadqrcode').empty();
+    }
+    window.closeQrModal = closeQrModal;
+
+    $(document).on('click', '.copy-link-btn', function(e) {
+        e.preventDefault();
+        var userId = $(this).data('id');
+        var linkVal = $('#link_' + userId).val();
+        
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(linkVal).then(function() {
+                $('#ajax_res_succ').text('Link copied to clipboard!');
+                $('#ajax_succ_div').fadeIn().delay(3000).fadeOut();
+            });
+        } else {
+            // fallback
+            var $temp = $("<input>");
+            $("body").append($temp);
+            $temp.val(linkVal).select();
+            document.execCommand("copy");
+            $temp.remove();
+            $('#ajax_res_succ').text('Link copied to clipboard!');
+            $('#ajax_succ_div').fadeIn().delay(3000).fadeOut();
+        }
+    });
+
+    $(document).on('click', '.gen-qr-btn', function(e) {
+        e.preventDefault();
+        var csrfName = $('.csrf_token').first().attr('name');
+        var csrfHash = $('.csrf_token').first().val();
+        var id = $(this).data('id');
+        var form_key = $(this).data('formkey');
+        var link = $('#link_' + id).val();
+
+        $.ajax({
+            url: "<?php echo base_url('generate-qr-code') ?>",
+            method: "post",
+            dataType: 'json',
+            data: { [csrfName]: csrfHash, id: id, form_key: form_key, link: link },
+            success: function(data) {
+                if (data.status === false) {
+                    $("#ajax_res_err").html(data.msg);
+                    $("#ajax_err_div").fadeIn().delay(3000).fadeOut();
+                } else if (data.status === 'error') {
+                    window.location.assign(data.redirect);
+                } else if (data.status === true) {
+                    $('#qrcode').html('<img src="' + data.qr + '" class="rounded-lg shadow-sm">');
+                    $('.downloadqrcode').html('<a href="<?php echo base_url('download-qr-code') ?>?fp=' + data.qr + '&fn='+data.qrfileName+'" class="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-all"><span class="material-symbols-outlined">download</span> Download</a>');
+                    $('#qrModal').removeClass('hidden').addClass('flex');
+                }
+                
+                // Update CSRF tokens
+                $('.csrf_token').val(data.token);
+            },
+            error: function() {
+                $('#ajax_res_err').text('Server error while generating QR.');
+                $('#ajax_err_div').fadeIn().delay(3000).fadeOut();
             }
         });
     });

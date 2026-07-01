@@ -1,7 +1,7 @@
 <!DOCTYPE html><html class="light" lang="en" style=""><head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
-<title>Register | Bizorm - Customer Feedback &amp; Reputation Management</title>
+<title>Register | <?php echo htmlspecialchars(($this->st && $this->st->site_name) ? $this->st->site_name : 'Bizorm'); ?> - Customer Feedback &amp; Reputation Management</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
@@ -121,6 +121,10 @@
         }
     </style>
 </head>
+<?php
+$site_name = ($this->st && $this->st->site_name) ? $this->st->site_name : 'Bizorm';
+$site_logo = ($this->st && $this->st->site_logo) ? base_url('assets/images/') . $this->st->site_logo : base_url('assets/images/logo.png');
+?>
 <body class="font-body-md text-on-surface selection:bg-primary-container selection:text-white">
 <main class="h-screen flex overflow-hidden">
 <!-- Split Layout: Left Content (Marketing/Visual) -->
@@ -131,13 +135,13 @@
 </div>
 <div class="relative z-10 max-w-lg space-y-lg">
 <div class="flex items-center space-x-md mb-xl">
-<a href="<?php echo base_url(); ?>"><img alt="Bizorm Logo" class="h-16 w-auto" src="<?php echo base_url('assets/images/logo.png'); ?>"></a>
+<a href="<?php echo base_url(); ?>"><img alt="<?php echo htmlspecialchars($site_name); ?> Logo" class="h-16 w-auto" src="<?php echo $site_logo; ?>"></a>
 </div>
 <h1 class="font-display-lg text-display-lg text-primary tracking-tight">
                     Build a reputation that <span class="text-secondary">shines.</span>
 </h1>
 <p class="font-body-lg text-body-lg text-on-surface-variant">
-                    Join over 5,000 businesses using Bizorm to capture customer sentiment, manage reviews, and grow their brand through authentic feedback.
+                    Capture customer sentiment, manage your reviews across platforms, and grow your brand through authentic feedback.
                 </p>
 <!-- Bento Grid Style Feature Highlights -->
 <div class="grid grid-cols-2 gap-md pt-lg">
@@ -152,14 +156,10 @@
 <div class="font-caption text-caption text-outline">All platforms in one dashboard.</div>
 </div>
 </div>
-<!-- Testimonial Badge -->
+<!-- Trust line -->
 <div class="flex items-center space-x-md bg-white/50 p-md rounded-full w-fit mt-xl border border-white/60">
-<div class="flex -space-x-2">
-<img class="w-8 h-8 rounded-full border-2 border-white object-cover" data-alt="Close up portrait of a smiling professional business owner in a modern office, natural lighting, high resolution, corporate lifestyle photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcvYYv-5ev4yhb3WvxSrMbAw1Tza1wmt8YdWZpYe23QA2SlmULzHRNZQfVTiGejdPqs5iHMMP0mXx16koqCPkBfKTou7voEATi6j3ChF0HTjpeBYDnDkNGAAmPjIXFyytkFYBQ-ztcwJf011WIks94RAZNhnHB7b8ibPytyJOi1jCqPLbA74KJEkNpR8aUMH7PychCGr9dSvOaQ0196UgDJth9Ske-5m7I3uw14PBLy67a0FM_qujYfP2DIja6vT4MsBMhFvZCSwo">
-<img class="w-8 h-8 rounded-full border-2 border-white object-cover" data-alt="Close up portrait of a young startup founder, creative studio background, soft warm lighting, professional photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCe8RTfTl2U_ThFToHbS4I164hQMoKAE_4cB961JmC8jS8DOpsln1y3cQnGwjchuHYQrZrzQyIFFdK79en_ORPMcMeLi34wcL1niykkpmxtyVRAxK02wy13Zo5KjAkXODvI7cQtxeTrinhN74EML40Q0drQJjIMZcvjmRHnulAgyObqiTXAwop0MXgsLhFGVIfMHaAcce68UeLR6dTBjdOeMYmjb6Wm0KdIQG0tJ50ynj6gA7aYIklxag-hKclnCY_48ZbsLOVKwSM">
-<img class="w-8 h-8 rounded-full border-2 border-white object-cover" data-alt="Close up portrait of a diverse entrepreneur, bright outdoor corporate setting, vibrant and trustworthy look." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdRkqgmzo6ipHbtHWw7DHwelzotMZbT2FwFr4o8rcqUkALzTTjfGMbqN2oNwZ9kzo1iKGEIfhgg6u1C4Tbn5palogv39txb4x4oFIUufIF97O6ip1NL27lN23MJ_MKup6LF5J2PbgswSp98oB1yo1-BEzxzSvsjh_hQhki5wsLrbcSleK2bpdTwt_WfwfrTm-7TE0A9TGWXIfSpxHBP5O6729kxJsy3EMR3ihk3rl5uQ_W8H-gvj2J0E3rhGQ0CcCdXWjRdgnNMNw">
-</div>
-<p class="font-caption text-caption text-on-surface">Trusted by <span class="font-bold">500+</span> industry leaders</p>
+<span class="material-symbols-outlined text-success">verified_user</span>
+<p class="font-caption text-caption text-on-surface">7-day free trial &middot; No credit card required</p>
 </div>
 </div>
 </div>
@@ -167,7 +167,7 @@
 <div class="w-full lg:w-1/2 flex flex-col items-center px-gutter py-xl md:py-2xl bg-white relative overflow-y-auto h-full">
 <!-- Mobile Logo -->
 <div class="lg:hidden absolute top-lg left-gutter">
-<img alt="Bizorm Logo" class="h-10 w-auto" src="<?php echo base_url('assets/images/logo.png'); ?>">
+<img alt="<?php echo htmlspecialchars($site_name); ?> Logo" class="h-10 w-auto" src="<?php echo $site_logo; ?>">
 </div>
 <div class="w-full max-w-md space-y-lg">
 <div class="text-center lg:text-left space-y-sm">
@@ -185,7 +185,7 @@
 
 <?php echo validation_errors('<div class="bg-error/10 border border-error/50 text-error p-3 rounded-lg mb-4 text-sm">', '</div>'); ?>
 <h2 class="font-headline-lg text-headline-lg text-on-surface">Create an Account</h2>
-<p class="font-body-md text-body-md text-on-surface-variant">Get started with your 14-day free trial.</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Get started with your 7-day free trial.</p>
 </div>
 <form action="<?php echo base_url('register'); ?>" method="post" id="regForm" class="space-y-md">
 <input type="hidden" class="csrf_token" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
@@ -256,7 +256,7 @@
 <!-- Terms Checkbox -->
 <div class="flex items-start space-x-md pt-sm">
 <div class="flex items-center h-5">
-<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary-container/30" id="terms" type="checkbox">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary-container/30" id="terms" name="terms" type="checkbox" required>
 </div>
 <label class="font-caption text-caption text-on-surface-variant leading-relaxed" for="terms">
                             I agree to the <a class="text-primary hover:underline font-bold" href="#">Terms and Conditions</a> and <a class="text-primary hover:underline font-bold" href="#">Privacy Policy</a>.
@@ -287,10 +287,9 @@
 <!-- Footer from Shared Components (Condensed for Auth) -->
 <footer class="absolute bottom-gutter w-full max-w-md mx-auto hidden sm:block">
 <div class="flex justify-between items-center text-outline font-caption text-caption">
-<span class="">© 2024 Bizorm. All rights reserved.</span>
+<span class="">&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</span>
 <div class="flex space-x-md">
-<a class="hover:text-primary transition-colors" href="#">Help Center</a>
-<a class="hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="hover:text-primary transition-colors" href="<?php echo base_url('support'); ?>">Help Center</a>
 </div>
 </div>
 </footer>

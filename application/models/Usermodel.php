@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Usermodel extends CI_Model
+class Usermodel extends MY_Model
 {
 	public function login()
 	{
@@ -108,6 +108,7 @@ class Usermodel extends CI_Model
 
 	public function register($admin, $iscmpy, $act_key, $form_key)
 	{
+		$this->db->trans_start();
 		$data = array(
 			'sadmin' => '0',
 			'admin' => $admin,
@@ -133,6 +134,11 @@ class Usermodel extends CI_Model
 
 		if (($iscmpy === 1) && ($admin === 1)) {
 			$this->insert_company_details($lastid, $form_key);
+		}
+		$this->db->trans_complete();
+
+		if ($this->db->trans_status() === FALSE) {
+			return FALSE;
 		}
 		return TRUE;
 	}
@@ -250,17 +256,7 @@ class Usermodel extends CI_Model
 
 	public function get_userQuota()
 	{
-		$id = $this->session->userdata("mr_id");
-		$form_key = $this->session->userdata("mr_form_key");
-		$iscmpy = $this->session->userdata("mr_iscmpy");
-		$cmpyid = $this->session->userdata("mr_cmpyid");
-
-		if ($iscmpy == "1" && !empty($cmpyid) && $cmpyid !== "" && $cmpyid !== null) {
-			$wherearray = array('by_user_id' => $cmpyid);
-		} else {
-			$wherearray = array('by_user_id' => $id, 'by_form_key' => $form_key);
-		}
-		$this->db->where($wherearray);
+		$this->scope_tenant('by_user_id');
 		$quotaInfo = $this->db->get("quota")->row();
 		return $quotaInfo;
 	}
@@ -276,18 +272,8 @@ class Usermodel extends CI_Model
 
 	public function update_webquota($type)
 	{
-		$user_id = $this->session->userdata("mr_id");
-		$form_key = $this->session->userdata("mr_form_key");
-		$iscmpy = $this->session->userdata("mr_iscmpy");
-		$cmpyid = $this->session->userdata("mr_cmpyid");
-
-		if ($iscmpy == "1" && !empty($cmpyid) && $cmpyid !== "" && $cmpyid !== null) {
-			$wherearray = array('by_user_id' => $cmpyid);
-		} else {
-			$wherearray = array('by_user_id' => $user_id, 'by_form_key' => $form_key);
-		}
+		$this->scope_tenant('by_user_id');
 		$this->db->set('web_quota', $type, FALSE);
-		$this->db->where($wherearray);
 		$this->db->update("quota");
 		return true;
 		exit;
@@ -295,17 +281,7 @@ class Usermodel extends CI_Model
 
 	public function get_webspacequota($web_count)
 	{
-		$user_id = $this->session->userdata("mr_id");
-		$form_key = $this->session->userdata("mr_form_key");
-		$iscmpy = $this->session->userdata("mr_iscmpy");
-		$cmpyid = $this->session->userdata("mr_cmpyid");
-
-		if ($iscmpy == "1" && !empty($cmpyid) && $cmpyid !== "" && $cmpyid !== null) {
-			$wherearray = array('by_user_id' => $cmpyid);
-		} else {
-			$wherearray = array('by_user_id' => $user_id, 'by_form_key' => $form_key);
-		}
-		$this->db->where($wherearray);
+		$this->scope_tenant('by_user_id');
 		$res = $this->db->get("quota")->row();
 
 		if ($res->web_quota > 0) {
@@ -489,6 +465,7 @@ class Usermodel extends CI_Model
 					return "You have an existing platform with the link [" . $web_link_new . "]";
 					exit;
 				} else {
+					$this->db->trans_start();
 					$this->update_webquota($type = "web_quota-1");
 
 					$data = array(
@@ -505,7 +482,13 @@ class Usermodel extends CI_Model
 						'star_rating' => "0"
 					);
 					$this->db->insert('websites', $data);
-					return $this->db->insert_id();
+					$insert_id = $this->db->insert_id();
+					
+					$this->db->trans_complete();
+					if ($this->db->trans_status() === FALSE) {
+						return "Database error during platform creation.";
+					}
+					return $insert_id;
 				}
 			}
 		}
@@ -718,7 +701,7 @@ class Usermodel extends CI_Model
 
 		if ($this->session->userdata('mr_admin') === '1') {
 
-			if (!empty($uidArr)) {
+			if (!empty($ufkArr)) {
 				$this->db->where_in('ar.form_key', $ufkArr);
 			}
 		}
@@ -797,6 +780,144 @@ class Usermodel extends CI_Model
 		} else {
 			return $query;
 		}
+	}
+
+	/**
+	 * Collects the set of form_keys for the whole company
+	 * (the Company Admin plus all their staff/sub-users).
+	 */
+	public function cmpy_formKeys()
+	{
+		$keys = array();
+		$own = $this->session->userdata('mr_form_key');
+		if (!empty($own)) {
+			$keys[] = $own;
+		}
+		foreach ($this->get_cmpyUsers_type('form_key')->result_array() as $r) {
+			if (!empty($r['form_key'])) {
+				$keys[] = $r['form_key'];
+			}
+		}
+		return $keys;
+	}
+
+	/**
+	 * Collects the set of user ids for the whole company
+	 * (the Company Admin plus all their staff/sub-users).
+	 */
+	public function cmpy_userIds()
+	{
+		$ids = array();
+		$own = $this->session->userdata('mr_id');
+		if (!empty($own)) {
+			$ids[] = $own;
+		}
+		foreach ($this->get_cmpyUsers_type('id')->result_array() as $r) {
+			if (!empty($r['id'])) {
+				$ids[] = $r['id'];
+			}
+		}
+		return $ids;
+	}
+
+	/**
+	 * Aggregated dashboard data for a Company Admin (tenant owner):
+	 * KPIs and chart datasets spanning the admin and all sub-users.
+	 */
+	public function cmpy_dashboard()
+	{
+		$keys = $this->cmpy_formKeys();
+		$ids  = $this->cmpy_userIds();
+
+		$out = array(
+			'total_reviews'    => 0,
+			'avg_rating'       => 0,
+			'reviews_month'    => 0,
+			'total_platforms'  => 0,
+			'active_platforms' => 0,
+			'per_platform'     => array(), // [{label, count}]
+			'monthly'          => array(), // [{month, count}]
+			'distribution'     => array(0, 0, 0, 0, 0), // 1..5 stars
+			'per_staff'        => array(), // [{label, count}]
+		);
+
+		if (empty($keys)) {
+			return $out;
+		}
+
+		// Totals + average rating
+		$this->db->select('COUNT(*) AS total_reviews, AVG(star) AS avg_rating', false);
+		$this->db->where_in('form_key', $keys);
+		$row = $this->db->get('all_ratings')->row();
+		if ($row) {
+			$out['total_reviews'] = (int) $row->total_reviews;
+			$out['avg_rating']    = $row->avg_rating ? round((float) $row->avg_rating, 1) : 0;
+		}
+
+		// Reviews this month (current year-month)
+		$this->db->where_in('form_key', $keys);
+		$this->db->like('rated_at', date('Y-m'), 'after');
+		$out['reviews_month'] = $this->db->count_all_results('all_ratings');
+
+		// Platforms across the company
+		if (!empty($ids)) {
+			$this->db->where_in('user_id', $ids);
+			$out['total_platforms'] = $this->db->count_all_results('websites');
+
+			$this->db->where_in('user_id', $ids);
+			$this->db->where('active', '1');
+			$out['active_platforms'] = $this->db->count_all_results('websites');
+		}
+
+		// Reviews per platform (grouped by web_name)
+		$this->db->select('web_name, COUNT(*) AS cnt', false);
+		$this->db->where_in('form_key', $keys);
+		$this->db->group_by('web_name');
+		$this->db->order_by('cnt', 'desc');
+		foreach ($this->db->get('all_ratings')->result() as $r) {
+			$out['per_platform'][] = array(
+				'label' => ($r->web_name !== null && $r->web_name !== '') ? $r->web_name : 'Unknown',
+				'count' => (int) $r->cnt,
+			);
+		}
+
+		// Rating distribution (1..5 stars)
+		$this->db->select('star, COUNT(*) AS cnt', false);
+		$this->db->where_in('form_key', $keys);
+		$this->db->where('star >', 0);
+		$this->db->group_by('star');
+		foreach ($this->db->get('all_ratings')->result() as $r) {
+			$s = (int) $r->star;
+			if ($s >= 1 && $s <= 5) {
+				$out['distribution'][$s - 1] = (int) $r->cnt;
+			}
+		}
+
+		// Reviews over time (monthly, regardless of year - matches existing chart behaviour)
+		$monthArr = array('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
+		$monthIdx = array('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12');
+		foreach ($monthArr as $k => $m) {
+			$this->db->like('rated_at', '-' . $monthIdx[$k] . '-');
+			$this->db->where_in('form_key', $keys);
+			$out['monthly'][] = array('month' => $m, 'count' => $this->db->count_all_results('all_ratings'));
+		}
+
+		// Reviews per staff (branch), including the admin themselves
+		$this->db->select('u.id, u.uname, u.fname, u.lname, u.form_key, COUNT(ar.id) AS cnt', false);
+		$this->db->from('users u');
+		$this->db->join('all_ratings ar', 'ar.form_key = u.form_key', 'left');
+		$this->db->where_in('u.form_key', $keys);
+		$this->db->group_by(array('u.id', 'u.uname', 'u.fname', 'u.lname', 'u.form_key'));
+		$this->db->order_by('cnt', 'desc');
+		foreach ($this->db->get()->result() as $r) {
+			$name = trim($r->fname . ' ' . $r->lname);
+			$out['per_staff'][] = array(
+				'label' => ($name !== '') ? $name : $r->uname,
+				'count' => (int) $r->cnt,
+			);
+		}
+
+		return $out;
 	}
 
 	public function allemail()
@@ -904,20 +1025,7 @@ class Usermodel extends CI_Model
 
 	public function is_userquotaexpired($qType)
 	{
-		$user_id = $this->session->userdata("mr_id");
-		$form_key = $this->session->userdata('mr_form_key');
-		$iscmpy = $this->session->userdata('mr_iscmpy');
-		$cmpyid = $this->session->userdata('mr_cmpyid');
-
-		if ($iscmpy == "1" && !empty($cmpyid) && $cmpyid !== "" && $cmpyid !== null) {
-			$wherearray = array('by_user_id' => $cmpyid);
-			$mwherearray = array('id' => $cmpyid);
-		} else {
-			$wherearray = array('by_user_id' => $user_id, 'by_form_key' => $form_key);
-			$mwherearray = array('id' => $user_id, 'form_key' => $form_key);
-		}
-
-		$this->db->where($wherearray);
+		$this->scope_tenant('by_user_id');
 		$query = $this->db->get('quota')->row();
 
 		if ($query) {
@@ -926,7 +1034,7 @@ class Usermodel extends CI_Model
 				exit;
 			}
 			if ($query->$qType == '0'  || $query->$qType < '0') {
-				$this->db->where($mwherearray);
+				$this->scope_tenant('id');
 				$mquery = $this->db->get('users')->row();
 				if ($mquery) {
 					$mailid = $mquery->email;
@@ -1039,19 +1147,8 @@ class Usermodel extends CI_Model
 
 	public function userquotaupdate($length, $q)
 	{
-		$user_id = $this->session->userdata("mr_id");
-		$form_key = $this->session->userdata('mr_form_key');
-		$iscmpy = $this->session->userdata('mr_iscmpy');
-		$cmpyid = $this->session->userdata('mr_cmpyid');
-
-		if ($iscmpy == "1" && !empty($cmpyid) && $cmpyid !== "" && $cmpyid !== null) {
-			$wherearray = array('by_user_id' => $cmpyid);
-		} else {
-			$wherearray = array('by_form_key' => $form_key, 'by_user_id' => $user_id);
-		}
-
+		$this->scope_tenant('by_user_id');
 		$this->db->set($q, $length, FALSE);
-		$this->db->where($wherearray);
 		$this->db->update('quota');
 		return true;
 		exit;

@@ -1,312 +1,322 @@
-<!DOCTYPE html>
-<html class="light" lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Bizorm Reviews | Admin Dashboard</title>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script id="tailwind-config">
-tailwind.config = {
-    darkMode: "class",
-    theme: {
-        extend: {
-            colors: {
-                primary: "#1d3f58",
-                "primary-light": "#2a5472",
-                secondary: "#4cbfa6",
-                "on-primary": "#ffffff",
-                surface: "#f0f2f5",
-                "surface-container": "#ffffff",
-                "text-primary": "#334155",
-                "text-secondary": "#64748b",
-            },
-            fontFamily: {
-                sans: ["Inter", "sans-serif"],
-                display: ["Plus Jakarta Sans", "sans-serif"],
-            }
-        }
-    }
-}
-</script>
-<style>
-body { background-color: #f0f2f5; color: #334155; font-family: 'Inter', sans-serif; }
-.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-.sidebar-link { display: flex; align-items: center; gap: 12px; padding: 10px 16px; color: #e2e8f0; border-radius: 4px; transition: all 0.2s; }
-.sidebar-link:hover, .sidebar-link.active { background: #ffffff; color: #1d3f58; font-weight: 600; }
-.sidebar-link.active .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
-.sidebar-link:hover .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-</style>
-</head>
-<body class="flex min-h-screen overflow-x-hidden">
-<?php $url = $this->session->userdata('url'); ?>
+<?php $this->load->view('templates/tw_header'); ?>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.umd.min.js"></script>
 
-<!-- Sidebar -->
-<aside class="h-screen w-64 fixed left-0 top-0 bg-primary flex flex-col z-40 transition-transform duration-300 md:translate-x-0 -translate-x-full" id="sidebar">
-    <div class="px-6 py-5 border-b border-white/10 flex items-center justify-between">
-        <h1 class="text-xl font-display font-bold text-white tracking-wide">Bizorm Reviews</h1>
-        <button class="md:hidden text-white" id="mobile-menu-close">
-            <span class="material-symbols-outlined">close</span>
-        </button>
-    </div>
-    
-    <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-        <a class="sidebar-link active" href="<?php echo base_url('dashboard') ?>">
-            <span class="material-symbols-outlined">home</span>
-            <span class="text-sm">Dashboard</span>
-        </a>
-        <a class="sidebar-link" href="<?php echo base_url('platforms') ?>">
-            <span class="material-symbols-outlined">language</span>
-            <span class="text-sm">Platforms</span>
-        </a>
-        <a class="sidebar-link" href="<?php echo base_url('share') ?>">
-            <span class="material-symbols-outlined">send</span>
-            <span class="text-sm">Send Link</span>
-        </a>
-        <a class="sidebar-link" href="<?php echo base_url('users') ?>">
-            <span class="material-symbols-outlined">group</span>
-            <span class="text-sm">Manage Users</span>
-        </a>
-        <a class="sidebar-link" href="<?php echo base_url('branch') ?>">
-            <span class="material-symbols-outlined">domain</span>
-            <span class="text-sm">Branch Management</span>
-        </a>
-        <a class="sidebar-link" href="<?php echo base_url('account') ?>">
-            <span class="material-symbols-outlined">person</span>
-            <span class="text-sm">My Account</span>
-        </a>
-        <a class="sidebar-link" href="<?php echo base_url('report') ?>">
-            <span class="material-symbols-outlined">bar_chart</span>
-            <span class="text-sm">Report</span>
-        </a>
-        <a class="sidebar-link" href="<?php echo base_url('plans') ?>">
-            <span class="material-symbols-outlined">description</span>
-            <span class="text-sm">Plans</span>
-        </a>
-        <a class="sidebar-link" href="<?php echo base_url('pricing') ?>">
-            <span class="material-symbols-outlined">payments</span>
-            <span class="text-sm">Pricing Management</span>
-        </a>
-        <a class="sidebar-link" href="<?php echo base_url('logs') ?>">
-            <span class="material-symbols-outlined">receipt_long</span>
-            <span class="text-sm">Logs</span>
-        </a>
-        <a class="sidebar-link" href="<?php echo base_url('support') ?>">
-            <span class="material-symbols-outlined">help_center</span>
-            <span class="text-sm">Support</span>
-        </a>
-        <a class="sidebar-link" href="<?php echo base_url('settings') ?>">
-            <span class="material-symbols-outlined">settings</span>
-            <span class="text-sm">Settings</span>
-        </a>
-    </nav>
-    <div class="px-4 py-4 border-t border-white/10">
-        <a class="sidebar-link text-red-300 hover:text-red-600 hover:bg-red-50" href="<?php echo base_url('logout') ?>">
-            <span class="material-symbols-outlined">logout</span>
-            <span class="text-sm">Logout</span>
-        </a>
-    </div>
-</aside>
+<?php
+// Company-wide analytics (populated by User::dashboard for Company Admins).
+$cmpy = isset($cmpy) ? $cmpy : array(
+    'total_reviews' => 0, 'avg_rating' => 0, 'reviews_month' => 0,
+    'total_platforms' => 0, 'active_platforms' => 0,
+    'per_platform' => array(), 'monthly' => array(),
+    'distribution' => array(0, 0, 0, 0, 0), 'per_staff' => array(),
+);
+$staff_count = isset($branches) ? $branches->num_rows() : 0;
+$quota_credits = isset($quota) ? ((int)$quota->sms_quota + (int)$quota->email_quota + (int)$quota->whatsapp_quota) : 0;
+$avg_rating = (float) $cmpy['avg_rating'];
+?>
 
-<!-- Main Content -->
-<main class="flex-1 ml-0 md:ml-64 min-h-screen flex flex-col bg-surface">
-    <!-- Top Header -->
-    <header class="w-full h-14 bg-primary text-white flex justify-between items-center px-6 sticky top-0 z-30">
-        <div class="flex items-center">
-            <button class="md:hidden p-2 text-white mr-2" id="mobile-menu-toggle">
-                <span class="material-symbols-outlined">menu</span>
-            </button>
-        </div>
-        <div class="text-sm font-semibold uppercase tracking-widest text-white/90">
-            <?php echo ($this->session->userdata('mr_uname') ? $this->session->userdata('mr_uname') : 'ADMIN') ?>
-        </div>
-    </header>
+<div class="p-lg lg:p-xl space-y-xl max-w-7xl mx-auto w-full">
 
-    <div class="p-6 max-w-7xl mx-auto w-full space-y-6">
-        
-        <!-- Welcome Banner -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30 mb-lg">
+        <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-2xl font-display font-bold text-primary mb-1">Welcome back, <?php echo $this->session->userdata('mr_uname'); ?></h2>
-                <p class="text-text-secondary text-sm">Manage your review platforms and monitor overall customer feedback.</p>
+                <h2 class="font-headline-md text-headline-md text-on-surface">Welcome back, <?php echo $this->session->userdata('mr_uname'); ?> (Admin)</h2>
+                <p class="text-on-surface-variant font-body-md mt-1">Company feedback overview across you and your staff.</p>
             </div>
-            <div class="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-secondary border border-secondary/30 rounded-full text-xs font-semibold">
-                <span class="material-symbols-outlined text-sm">check_circle</span>
-                Active Subscription
-            </div>
-        </div>
-
-        <!-- Branch Summaries -->
-        <div>
-            <div class="flex items-center gap-2 mb-4">
-                <h3 class="font-bold text-text-primary">Branch Summaries</h3>
-                <span class="text-text-secondary text-xs">(2 active branches)</span>
-            </div>
-            
-            <div class="flex overflow-x-auto pb-4 gap-6 snap-x">
-                <!-- Branch Card 1 -->
-                <div class="min-w-[320px] bg-white p-5 rounded-xl shadow-sm border border-slate-200 snap-start flex-shrink-0 relative group">
-                    <div class="flex justify-between items-center mb-6">
-                        <h4 class="font-bold text-primary">Mumbai RestroPark</h4>
-                        <span class="text-xs font-mono bg-blue-50 text-blue-600 px-2 py-1 rounded">RESTROM</span>
-                    </div>
-                    <div class="grid grid-cols-2 gap-y-4 gap-x-2">
-                        <div>
-                            <p class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold mb-1">Reviews</p>
-                            <p class="font-bold text-lg">0</p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold mb-1">Avg Rating</p>
-                            <p class="font-bold text-lg text-yellow-500 flex items-center gap-1">0 <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span></p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold mb-1">Platforms</p>
-                            <p class="font-bold text-sm">0 active</p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold mb-1">Users</p>
-                            <p class="font-bold text-sm">1</p>
-                        </div>
-                    </div>
-                    <div class="mt-6 flex justify-between items-center border-t border-slate-100 pt-3">
-                        <span class="text-xs font-semibold text-secondary bg-green-50 px-2 py-1 rounded">Active</span>
-                        <a href="#" class="text-xs text-text-secondary group-hover:text-primary flex items-center gap-1 transition-colors">Drill down <span class="material-symbols-outlined text-xs">arrow_forward</span></a>
-                    </div>
-                </div>
-
-                <!-- Branch Card 2 -->
-                <div class="min-w-[320px] bg-white p-5 rounded-xl shadow-sm border border-slate-200 snap-start flex-shrink-0 relative group">
-                    <div class="flex justify-between items-center mb-6">
-                        <h4 class="font-bold text-primary">Gaziabad</h4>
-                        <span class="text-xs font-mono bg-blue-50 text-blue-600 px-2 py-1 rounded">GAZ11</span>
-                    </div>
-                    <div class="grid grid-cols-2 gap-y-4 gap-x-2">
-                        <div>
-                            <p class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold mb-1">Reviews</p>
-                            <p class="font-bold text-lg">0</p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold mb-1">Avg Rating</p>
-                            <p class="font-bold text-lg text-yellow-500 flex items-center gap-1">0 <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span></p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold mb-1">Platforms</p>
-                            <p class="font-bold text-sm">0 active</p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold mb-1">Users</p>
-                            <p class="font-bold text-sm">0</p>
-                        </div>
-                    </div>
-                    <div class="mt-6 flex justify-between items-center border-t border-slate-100 pt-3">
-                        <span class="text-xs font-semibold text-secondary bg-green-50 px-2 py-1 rounded">Active</span>
-                        <a href="#" class="text-xs text-text-secondary group-hover:text-primary flex items-center gap-1 transition-colors">Drill down <span class="material-symbols-outlined text-xs">arrow_forward</span></a>
-                    </div>
-                </div>
-                
-                <!-- Scroll Indicator Right -->
-                <div class="flex items-center justify-center pl-2">
-                    <button class="w-8 h-8 rounded-full bg-white shadow flex items-center justify-center text-text-secondary hover:text-primary hover:shadow-md transition-all">
-                        <span class="material-symbols-outlined text-sm">chevron_right</span>
-                    </button>
-                </div>
+            <div>
+                <?php if ($this->session->userdata('mr_sub') == '1'): ?>
+                    <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-success/10 text-success border border-success/20 text-sm font-medium">
+                        <span class="material-symbols-outlined text-sm">check_circle</span> Subscription Active
+                    </span>
+                <?php else: ?>
+                    <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-200 text-sm font-medium">
+                        <span class="material-symbols-outlined text-sm">warning</span> Subscription Inactive
+                    </span>
+                <?php endif; ?>
             </div>
         </div>
-
-        <!-- Status Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                <p class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold mb-2">Subscribed Plan</p>
-                <p class="font-bold text-base text-primary mb-1">Trial / Default Plan</p>
-                <p class="text-[10px] text-text-secondary">Active billing plan</p>
-            </div>
-            
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                <p class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold mb-2">Active User Seats</p>
-                <p class="font-bold text-base text-primary mb-1">1 <span class="text-sm font-normal text-text-secondary">/ 0 seats</span></p>
-            </div>
-            
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                <p class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold mb-2">Trial / Account Status</p>
-                <p class="inline-block px-2 py-0.5 bg-green-50 text-secondary border border-secondary/30 rounded text-xs font-semibold mb-2">Active Subscriber</p>
-                <p class="text-[10px] text-text-secondary">Billing lifecycle status</p>
-            </div>
-            
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                <p class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold mb-2">Combined Quota Credits</p>
-                <p class="font-bold text-lg text-primary mb-1">
-                    <?php echo isset($quotaInfo->balance) ? $quotaInfo->balance : '30099'; ?>
-                </p>
-                <p class="text-[10px] text-text-secondary">Remaining messages balance</p>
-            </div>
-        </div>
-
-        <!-- Aggregate Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pb-10">
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                    <span class="material-symbols-outlined">chat_bubble</span>
-                </div>
-                <div>
-                    <p class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold mb-1">Total Reviews</p>
-                    <p class="font-bold text-xl text-primary">3</p>
-                </div>
-            </div>
-            
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-lg bg-yellow-50 text-yellow-500 flex items-center justify-center">
-                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
-                </div>
-                <div>
-                    <p class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold mb-1">Average Rating</p>
-                    <p class="font-bold text-xl text-primary flex items-center gap-2">
-                        5 
-                        <span class="flex text-yellow-500 text-sm">
-                            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
-                            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
-                            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
-                            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
-                            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
-                        </span>
-                    </p>
-                </div>
-            </div>
-            
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-                    <span class="material-symbols-outlined">language</span>
-                </div>
-                <div>
-                    <p class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold mb-1">Active Platforms</p>
-                    <p class="font-bold text-xl text-primary">1</p>
-                </div>
-            </div>
-        </div>
-
     </div>
-</main>
+
+    <!-- KPI Cards -->
+    <div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30 mb-lg">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-lg">
+            <div class="bg-white p-md rounded-xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Total Sub-Users</p>
+                <h3 class="text-2xl font-bold text-primary"><?php echo $staff_count; ?></h3>
+                <p class="text-[11px] text-gray-500 mt-1">Registered staff accounts</p>
+            </div>
+
+            <div class="bg-white p-md rounded-xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Company Platforms</p>
+                <h3 class="text-2xl font-bold text-primary">
+                    <?php echo (int) $cmpy['active_platforms']; ?>
+                    <span class="text-gray-400 text-sm font-normal">/ <?php echo (int) $cmpy['total_platforms']; ?></span>
+                </h3>
+                <p class="text-[11px] text-gray-500 mt-1">Active / total across company</p>
+            </div>
+
+            <div class="bg-white p-md rounded-xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Total Reviews</p>
+                <h3 class="text-2xl font-bold text-primary"><?php echo (int) $cmpy['total_reviews']; ?></h3>
+                <p class="text-[11px] text-gray-500 mt-1"><?php echo (int) $cmpy['reviews_month']; ?> received this month</p>
+            </div>
+
+            <div class="bg-white p-md rounded-xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Average Rating</p>
+                <div class="flex items-center gap-2">
+                    <h3 class="text-2xl font-bold text-primary"><?php echo $avg_rating > 0 ? number_format($avg_rating, 1) : '0.0'; ?></h3>
+                    <div class="flex text-sm">
+                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                            <i class="<?php echo ($i <= round($avg_rating)) ? 'fas fa-star text-yellow-400' : 'far fa-star text-gray-300'; ?>"></i>
+                        <?php endfor; ?>
+                    </div>
+                </div>
+                <p class="text-[11px] text-gray-500 mt-1">Company-wide average</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Your Link -->
+    <div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30 relative overflow-hidden mb-lg">
+        <div class="flex items-center gap-sm mb-md text-primary">
+            <span class="material-symbols-outlined">link</span>
+            <h3 class="font-headline-md text-label-md uppercase tracking-wider">Your Admin Link</h3>
+        </div>
+        <div class="space-y-sm z-10 relative">
+            <label class="block font-label-md text-on-surface-variant">Feedback Link</label>
+            <div class="flex items-center gap-sm">
+                <input type="text" name="linkshare" class="flex-1 bg-surface-subtle border border-outline-variant/30 rounded-lg p-2 font-mono text-label-md text-on-surface-variant truncate" id='linkshare' value="<?php echo base_url("wtr/") . $this->session->userdata('mr_form_key') ?>" readonly>
+                <button class="p-2 bg-primary-fixed hover:bg-primary-container hover:text-on-primary rounded-lg transition-all" onclick="copylink_fun('#linkshare')" title="Copy Link">
+                    <span class="material-symbols-outlined text-body-md">content_copy</span>
+                </button>
+                <button class="genQrcode p-2 bg-surface-container-high hover:bg-primary-container hover:text-on-primary rounded-lg transition-all" title="Generate QR">
+                    <span class="material-symbols-outlined text-body-md">qr_code_2</span>
+                </button>
+            </div>
+            <div class="flex items-center gap-sm mt-3 pt-2 border-t border-gray-100">
+                <span class="text-sm font-medium text-gray-500 mr-2">Share directly via:</span>
+                <a href="https://api.whatsapp.com/send?text=<?php echo urlencode('Please share your feedback with us: ' . base_url('wtr/') . $this->session->userdata('mr_form_key')); ?>" target="_blank" class="w-10 h-10 flex items-center justify-center bg-green-50 text-green-600 hover:bg-green-100 rounded-lg transition-all" title="Share via WhatsApp">
+                    <i class="fab fa-whatsapp text-lg"></i>
+                </a>
+                <a href="mailto:?subject=<?php echo urlencode('We would love your feedback!'); ?>&body=<?php echo urlencode('Please share your feedback with us: ' . base_url('wtr/') . $this->session->userdata('mr_form_key')); ?>" class="w-10 h-10 flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-all" title="Share via Email">
+                    <span class="material-symbols-outlined text-[20px]">mail</span>
+                </a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode(base_url('wtr/') . $this->session->userdata('mr_form_key')); ?>" target="_blank" class="w-10 h-10 flex items-center justify-center bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-all" title="Share on Facebook">
+                    <i class="fab fa-facebook-f text-lg"></i>
+                </a>
+                <span class="ml-auto text-xs text-gray-500">Quota credits: <strong class="text-gray-700"><?php echo $quota_credits; ?></strong></span>
+            </div>
+            <p class="font-caption text-caption text-outline mt-sm flex items-center gap-xs">
+                <span class="material-symbols-outlined text-xs">info</span> Share this link to collect feedback directly.
+            </p>
+        </div>
+        <div class="absolute -right-12 -bottom-12 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Staff Summaries -->
+    <div class="mb-lg">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-headline-md text-body-lg font-bold text-gray-800">Staff Summaries</h3>
+            <a href="<?php echo base_url('users') ?>" class="text-sm text-primary hover:underline font-semibold">View All Staff</a>
+        </div>
+        <div class="flex overflow-x-auto pb-4 gap-6 snap-x" style="scrollbar-width: thin;">
+            <?php if (isset($branches) && $branches->num_rows() > 0): ?>
+                <?php foreach($branches->result() as $branch): ?>
+                <div class="min-w-[320px] bg-white p-5 rounded-xl shadow-sm border border-slate-200 snap-start flex-shrink-0 relative group hover:border-primary/50 transition-all cursor-pointer">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="font-bold text-gray-800 text-lg truncate max-w-[200px]" title="<?php echo $branch->uname; ?>">
+                            <?php echo (!empty($branch->fname)) ? $branch->fname . ' ' . $branch->lname : $branch->uname; ?>
+                        </h4>
+                        <span class="text-xs font-mono bg-blue-50 text-blue-600 px-2 py-1 rounded border border-blue-100">
+                            ID: <?php echo $branch->id; ?>
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-y-4 gap-x-2">
+                        <div>
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-1">Company</p>
+                            <p class="font-bold text-sm text-gray-600 truncate" title="<?php echo $branch->cmpy; ?>"><?php echo !empty($branch->cmpy) ? $branch->cmpy : 'N/A'; ?></p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-1">Email</p>
+                            <p class="font-bold text-sm text-gray-600 truncate" title="<?php echo $branch->email; ?>"><?php echo $branch->email; ?></p>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-between items-center border-t border-slate-100 pt-3">
+                        <?php if ($branch->active == '1'): ?>
+                            <span class="text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2 py-1 rounded">Active</span>
+                        <?php else: ?>
+                            <span class="text-xs font-semibold text-red-700 bg-red-50 border border-red-200 px-2 py-1 rounded">Inactive</span>
+                        <?php endif; ?>
+                        <a href="<?php echo base_url('users') ?>" class="text-xs text-gray-500 group-hover:text-primary flex items-center gap-1 transition-colors font-medium">Manage User <span class="material-symbols-outlined text-xs">arrow_forward</span></a>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="w-full bg-white p-8 text-center rounded-xl border border-dashed border-gray-300">
+                    <span class="material-symbols-outlined text-gray-400 text-4xl mb-2">domain_disabled</span>
+                    <p class="text-gray-500 font-medium">No sub-users configured yet.</p>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-lg">
+        <div class="bg-white p-lg rounded-xl shadow-sm border border-outline-variant/30">
+            <h3 class="font-headline-md text-body-lg font-bold mb-xl">Reviews per Platform</h3>
+            <div class="chart-container" style="position: relative; height: 250px; width: 100%;">
+                <canvas id="adminPlatformChart"></canvas>
+            </div>
+        </div>
+        <div class="bg-white p-lg rounded-xl shadow-sm border border-outline-variant/30">
+            <h3 class="font-headline-md text-body-lg font-bold mb-xl">Reviews Over Time</h3>
+            <div class="chart-container" style="position: relative; height: 250px; width: 100%;">
+                <canvas id="adminMonthlyChart"></canvas>
+            </div>
+        </div>
+        <div class="bg-white p-lg rounded-xl shadow-sm border border-outline-variant/30">
+            <h3 class="font-headline-md text-body-lg font-bold mb-xl">Rating Distribution</h3>
+            <div class="chart-container" style="position: relative; height: 250px; width: 100%;">
+                <canvas id="adminDistChart"></canvas>
+            </div>
+        </div>
+        <div class="bg-white p-lg rounded-xl shadow-sm border border-outline-variant/30">
+            <h3 class="font-headline-md text-body-lg font-bold mb-xl">Reviews per Staff</h3>
+            <div class="chart-container" style="position: relative; height: 250px; width: 100%;">
+                <canvas id="adminStaffChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
 
 <script>
+var adminDash = {
+    perPlatform: <?php echo json_encode($cmpy['per_platform']); ?>,
+    monthly: <?php echo json_encode($cmpy['monthly']); ?>,
+    distribution: <?php echo json_encode(array_values($cmpy['distribution'])); ?>,
+    perStaff: <?php echo json_encode($cmpy['per_staff']); ?>
+};
+
 $(document).ready(function() {
-    $('#mobile-menu-toggle, #mobile-menu-close').click(function(e) {
-        e.stopPropagation();
-        $('#sidebar').toggleClass('-translate-x-full');
+    var palette = ['#004ac6', '#2563eb', '#60a5fa', '#93c5fd', '#b4c5ff', '#10B981', '#f59e0b', '#ef4444'];
+    var baseOpts = { responsive: true, maintainAspectRatio: false };
+
+    // Reviews per Platform (doughnut)
+    new Chart(document.getElementById('adminPlatformChart'), {
+        type: 'doughnut',
+        data: {
+            labels: adminDash.perPlatform.map(function(r) { return r.label; }),
+            datasets: [{
+                data: adminDash.perPlatform.map(function(r) { return r.count; }),
+                backgroundColor: palette,
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: Object.assign({}, baseOpts, { cutout: '70%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true } } } })
     });
-    
-    $(document).click(function(e) {
-        if (!$(e.target).closest('#sidebar, #mobile-menu-toggle').length && $(window).width() < 768) {
-            $('#sidebar').addClass('-translate-x-full');
-        }
+
+    // Reviews Over Time (line)
+    new Chart(document.getElementById('adminMonthlyChart'), {
+        type: 'line',
+        data: {
+            labels: adminDash.monthly.map(function(r) { return r.month; }),
+            datasets: [{
+                label: 'Reviews',
+                data: adminDash.monthly.map(function(r) { return r.count; }),
+                borderColor: '#004ac6',
+                backgroundColor: 'rgba(0, 74, 198, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 3
+            }]
+        },
+        options: Object.assign({}, baseOpts, { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f0f3ff' } }, x: { grid: { display: false } } } })
+    });
+
+    // Rating Distribution (bar)
+    new Chart(document.getElementById('adminDistChart'), {
+        type: 'bar',
+        data: {
+            labels: ['1 Star', '2 Star', '3 Star', '4 Star', '5 Star'],
+            datasets: [{
+                label: 'Reviews',
+                data: adminDash.distribution,
+                backgroundColor: ['#ef4444', '#f59e0b', '#eab308', '#84cc16', '#10B981'],
+                borderRadius: 4
+            }]
+        },
+        options: Object.assign({}, baseOpts, { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f0f3ff' } }, x: { grid: { display: false } } } })
+    });
+
+    // Reviews per Staff (horizontal bar)
+    new Chart(document.getElementById('adminStaffChart'), {
+        type: 'bar',
+        data: {
+            labels: adminDash.perStaff.map(function(r) { return r.label; }),
+            datasets: [{
+                label: 'Reviews',
+                data: adminDash.perStaff.map(function(r) { return r.count; }),
+                backgroundColor: '#2563eb',
+                borderRadius: 4
+            }]
+        },
+        options: Object.assign({}, baseOpts, { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f0f3ff' } }, y: { grid: { display: false } } } })
+    });
+
+    $(document).on('click', '.genQrcode', function(e) {
+        e.preventDefault();
+        var csrfName = $('.csrf_token').attr('name');
+        var csrfHash = $('.csrf_token').val();
+        var id = "<?php echo $this->session->userdata('mr_id'); ?>";
+        var form_key = "<?php echo $this->session->userdata('mr_form_key'); ?>";
+        var link = "<?php echo base_url("wtr/") . $this->session->userdata('mr_form_key') ?>";
+
+        $.ajax({
+            url: "<?php echo base_url('generate-qr-code') ?>",
+            method: "post",
+            dataType: 'json',
+            data: { [csrfName]: csrfHash, id: id, form_key: form_key, link: link },
+            success: function(data) {
+                if (data.status === false) {
+                    alert(data.msg);
+                } else if (data.status === 'error') {
+                    window.location.assign(data.redirect);
+                } else if (data.status === true) {
+                    $('#qrcode').html('<img src="' + data.qr + '" class="rounded-lg shadow-sm">');
+                    $('.downloadqrcode').html('<a href="<?php echo base_url('download-qr-code') ?>?fp=' + data.qr + '&fn='+data.qrfileName+'" class="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all"><span class="material-symbols-outlined">download</span> Download</a>');
+                    $('#qrModal').removeClass('hidden').addClass('flex');
+                }
+                $('.csrf_token').val(data.token);
+            }
+        });
     });
 });
+
+function copylink_fun(selector) {
+    var copyText = $(selector);
+    copyText.select();
+    document.execCommand("copy");
+    alert('Link copied to clipboard');
+}
+
+function closeQrModal() {
+    $('#qrModal').addClass('hidden').removeClass('flex');
+    $('#qrcode').empty();
+    $('.downloadqrcode').empty();
+}
 </script>
-</body>
-</html>
+
+<!-- QR Modal -->
+<div id="qrModal" class="hidden fixed inset-0 z-[100] bg-black/50 items-center justify-center backdrop-blur-sm">
+    <div class="bg-surface-container-lowest p-lg rounded-xl shadow-xl w-full max-w-sm mx-4 transform transition-all relative" style="background-color: white; padding: 1.5rem; border-radius: 0.75rem;">
+        <button class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors" onclick="closeQrModal()">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <h3 class="text-xl font-display font-bold text-gray-900 mb-4 text-center">QR Code</h3>
+        <div id="qrcode" class="flex justify-center mb-6"></div>
+        <div class="downloadqrcode text-center"></div>
+    </div>
+</div>
+
+<?php $this->load->view('templates/tw_footer'); ?>
